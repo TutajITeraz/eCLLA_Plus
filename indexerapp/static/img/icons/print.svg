@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="20mm"
+   height="20mm"
+   viewBox="0 0 20 20"
+   version="1.1"
+   id="svg1139"
+   sodipodi:docname="print.svg"
+   inkscape:version="1.3.2 (091e20ef0f, 2023-11-25, custom)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <title
+     id="title233">Print icon</title>
+  <defs
+     id="defs1133">
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath5238-1-8-9-8-4">
+      <rect
+         transform="rotate(-90)"
+         style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;enable-background:accumulate"
+         id="rect5240-2-3-9-5-1"
+         width="315.35437"
+         height="744.09448"
+         x="-1016.9291"
+         y="1461.6753" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath5242-3-9-7-7">
+      <rect
+         transform="rotate(-90)"
+         style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;enable-background:accumulate"
+         id="rect5244-3-2-6-6"
+         width="315.35437"
+         height="744.09448"
+         x="-1016.9291"
+         y="1461.6753" />
+    </clipPath>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="6.9717708"
+     inkscape:cx="37.938711"
+     inkscape:cy="37.795276"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1366"
+     inkscape:window-height="723"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:snap-bbox="true"
+     inkscape:bbox-paths="true"
+     inkscape:snap-bbox-edge-midpoints="true"
+     inkscape:bbox-nodes="true"
+     inkscape:snap-bbox-midpoints="true"
+     inkscape:object-paths="true"
+     inkscape:snap-intersection-paths="true"
+     inkscape:snap-smooth-nodes="true"
+     inkscape:snap-midpoints="true"
+     fit-margin-left="0"
+     fit-margin-top="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <metadata
+     id="metadata1136">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Print icon</dc:title>
+        <dc:date>2018-09-30</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>m1981</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>Public domain</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:publisher>
+          <cc:Agent>
+            <dc:title>Inkscape</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li>icon</rdf:li>
+            <rdf:li>flat</rdf:li>
+            <rdf:li>IT</rdf:li>
+            <rdf:li>computer</rdf:li>
+            <rdf:li>print</rdf:li>
+            <rdf:li />
+          </rdf:Bag>
+        </dc:subject>
+        <dc:description>A print / printer icon.</dc:description>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-94.396759,-75.588715)">
+    <path
+       sodipodi:nodetypes="ccscccccccssccccccscccccscsccccsccccccccccccccsscc"
+       inkscape:connector-curvature="0"
+       id="path4741"
+       d="m 99.447413,75.949384 v 3.322197 h -0.679987 c -0.535878,0 -0.759478,0.415114 -1.365365,1.54266 l -1.563243,2.909198 4.939752,8.24e-4 v -6.282836 h 7.24056 v 6.282836 l 2.43211,-8.24e-4 c 0.92942,0 0.92942,1.569007 0,1.569007 H 95.772259 c -0.519027,0 -0.970347,0.331967 -1.203473,0.813862 -0.04351,0.09043 -0.07832,0.185557 -0.106165,0.285381 -0.0069,0.02348 -0.01396,0.04697 -0.02088,0.07086 -0.02436,0.110007 -0.03933,0.227442 -0.04143,0.346448 -1.06e-4,0.0078 -0.0017,0.01169 -0.0017,0.01957 0.0035,0.04854 0.0028,0.09747 -0.0017,0.145631 v 3.820185 c 0,0.855867 0.612111,1.544697 1.37255,1.544697 h 0.922832 c -0.193896,1.041111 -0.233928,1.892826 -0.233928,2.888959 h 15.876955 c 0,-1.011359 -0.10171,-2.035989 -0.23567,-2.888959 h 0.92464 c 0.76044,0 1.37254,-0.68883 1.37254,-1.544697 v -3.955868 c 0,-0.275202 -0.0686,-0.529734 -0.17996,-0.753067 h 0.008 l -0.063,-0.111176 -2.77026,-5.154347 c -0.6071,-1.129583 -0.83076,-1.544697 -1.36538,-1.544697 h -0.68174 v -3.324193 z m -3.241621,12.14496 h 2.220721 c -0.263858,0.429753 -0.548363,0.973463 -0.823908,1.568965 H 96.23364 c -0.929444,0.01958 -0.959138,-1.568965 -0.02784,-1.568965 z m 4.011528,0 h 8.35767 c 0.25133,0.330007 1.81032,2.711506 2.14788,5.563316 H 98.069463 c 0.337663,-2.85181 1.896598,-5.233466 2.147857,-5.563316 z m 10.14578,0 h 2.19464 c 0.92941,0 0.92941,1.568965 0,1.568965 h -1.36895 c -0.27571,-0.595659 -0.56178,-1.139134 -0.82569,-1.568965 z"
+       style="display:inline;opacity:1;vector-effect:none;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.977081px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none" />
+  </g>
+</svg>

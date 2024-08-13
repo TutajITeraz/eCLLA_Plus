@@ -1,0 +1,51 @@
+{% extends "main_view.html" %}
+
+
+{% block title %}Manuscripts{% endblock %}
+
+
+{% block links %}
+        <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
+        <link href="/static/css/styles.css" rel="stylesheet" />
+{% endblock %}
+
+{% block main %}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Manuscripts</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item active">We have {{ manuscripts|length }} Manuscripts indexed</li>
+    </ol>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table me-1"></i>
+            Manuscripts
+        </div>
+        <div class="card-body">
+		<table id="datatablesSimple">
+			<thead>
+				<tr>
+				  <th>id</th>
+				  <th>Name</th>
+				  <th>Rism Id</th>
+				  <th>Rites count</th>
+				  <th>IIIF Manifest url</th>
+				</tr>
+			</thead>
+            <tbody>
+			  {% for ms in manuscripts %}
+			  <tr>
+				<td>{{ ms.id }}</td>
+				<td><a href="/static/main.html?p=manuscript&id={{ ms.id }}"> {{ ms.name }} </a></td>
+				<td>{{ ms.rism_id }}</td>
+				<td>{{ ms.rites_count }}</td>
+				<td>{{ ms.iiif_manifest_url }}</td>
+			  </tr>
+			  {% endfor %}
+			</tbody>
+		</table>
+        </div>
+    </div>
+</div>
+{% endblock %}

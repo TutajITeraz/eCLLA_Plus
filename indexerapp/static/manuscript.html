@@ -1,0 +1,472 @@
+
+<div x-data="{}" class="manuscriptPage" x-init="manuscript_init()">
+    <h1 class="printIt"><strong x-text="(await getMSInfo()).manuscript.name + ', ' + ((await getMSInfo()).manuscript.rism_id || '')"></strong></h1>
+
+    <!-- <a class="gjs-button" href="/manuscripts/">< See all Manuscripts</a>-->
+    
+
+    <div class="two_columns">
+
+        <div class="left_column"  id="leftColumn">
+            <div x-show="(await getMSInfo()).manuscript.iiif_manifest_url == '-'">
+                <div>
+                    <div x-show="(await getMSInfo()).manuscript.image == ''">
+                            <!--<p> No iiif preview </p>-->
+                    </div>
+
+                    <div x-show="(await getMSInfo()).manuscript.image != ''">
+                    
+                            <img style="max-height: 100%; max-width:100%; margin:auto; position: relative" x-bind:src="'/media/'+(await getMSInfo()).manuscript.image"></img>
+                            <!-- <div id="my-mirador" style="height: 100%; width:100%; margin:auto; position: relative"></div>-->
+
+                    </div>
+                </div>
+            </div>
+
+            <div id="my-mirador" x-show="(await getMSInfo()).manuscript.iiif_manifest_url != '-'"  style="max-height: 100%; max-width:100%; margin:auto">
+            </div>
+        </div>
+
+        <div class="resizer" id="resizer"></div>
+
+        
+        <div class="right_column" id="rightColumn">
+            <!--
+            <div class="wrap-collabsible">
+                <input id="collapsible1" class="toggle" type="checkbox" checked>
+                <label for="collapsible1" class="lbl-toggle">Main info</label>
+                <div class="collapsible-content">
+                -->
+            <div class="openbox open-lvl-0" x-data="{ open: false }">
+                <button @click="open = ! open" class="toggle" x-bind:opened="open"><img class="button-icon" src="/static/img/icons/info.svg"></img><span class="printIt title">Main info</span></button>
+                
+                <div class="open-inside" x-show="open" x-transition x-transition:enter.scale.80 x-transition:enter.duration.1500ms x-transition.scale.origin.top>
+                    <table class="printIt">
+                        <template x-for="(fvalue, fname) in (await getMSInfoFiltered()).manuscript">
+                            <tr x-data="getPrintableValues(fname, fvalue)">
+                                <span x-text="fvalue"></span>
+
+                                <th><div class="field-name"><span x-text="name"></span></div></th>
+                                <td>
+                                    <span x-html="value"></span> <!-- <a data-popup="yes" href="{{ ms_comment_add_url_with_parameters }}{{ field }}">+</a>-->
+                                    <template x-for="comment in (await getMSInfo()).debate">
+                                    
+                                        <template x-if="comment.field_name == fname">
+                                            <a class="debate-link" x-bind:href="'#debate-'+comment.id" x-bind:title="comment.text">*</a>
+                                        </template>
+
+                                    </template>
+                                </td>
+                            </tr>
+                        </template>
+                    </table>
+
+                    <template x-if="(await getMSInfo()).debate?.length">
+                        <div>
+                            <h4 class="printIt" >Different Opinions:</h4>
+                            <ul>
+                                <template x-for="(comment) in (await getMSInfo()).debate">
+                                    <div class="printIt" >
+                                        <li>
+                                            According to:
+                                            <div x-bind:id="'#debate-'+comment.id"><b x-text="comment.bibliography "></b>,
+                                            <span style="display: block;">
+                                                <u x-text="comment.field_name"></u>
+                                                is: <b  x-text="comment.text "></b>
+                                            </span>
+                                        </li>
+                                        <!--<a class="debate-link" x-bind:href="'#debate-'+comment.id" x-bind:title="comment.text">*</a>-->
+                                    </div>
+                                </template>
+
+                            </ul>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+                <!--
+                </div>
+            </div>
+            -->
+
+            <template x-if="(await getCLLAInfo()).data?.length">
+                <div class="openbox open-lvl-0" x-data="{ open: false }">
+                    <button @click="open = ! open" class="toggle" x-bind:opened="open"><img class="button-icon" src="/static/img/icons/books.svg"></img><span class="printIt title">CLLA</span></button>
+                    
+                    <div class="open-inside" x-show="open" x-transition x-transition:enter.scale.80 x-transition:enter.duration.1500ms x-transition.scale.origin.top>
+                        <div>
+                            <table class="printIt">
+                                <template x-for="(fvalue, fname) in ((await getCLLAInfo()).data[0])">
+                                    <tr x-data="getPrintableValues(fname, fvalue)">
+
+                                        <th>
+                                            <div class="field-name"><span x-text="name"></span></div>
+                                        </th>
+                                        <td>
+                                            <span x-text="value"></span> <!-- <a data-popup="yes" href="{{ ms_comment_add_url_with_parameters }}{{ field }}">+</a>-->
+                                        </td>
+                                    </tr>
+                                </template>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+
+            <br />
+
+            <template x-if="(await getCodicologyInfo()).info">
+                <div class="openbox open-lvl-0" x-data="{ open: false }">
+                    <button @click="open = ! open" class="toggle" x-bind:opened="open"><img class="button-icon" src="/static/img/icons/codicology.svg"></img><span class="printIt title">Codicology and paleography</span></button>
+                    
+                    <div class="open-inside" x-show="open" x-transition x-transition:enter.scale.80 x-transition:enter.duration.1500ms x-transition.scale.origin.top>
+                        <div>
+                            <table class="printIt table-hover stripe">
+
+                                <tr>
+                                    <th>how many quires</th>
+                                    <td x-text="(await getMSInfo()).manuscript.how_many_quires"></td>
+                                </tr>
+                                <tr>
+                                    <th>quires comment</th>
+                                    <td x-text="(await getMSInfo()).manuscript.quires_comment"></td>
+                                </tr>
+                                <tr>
+                                    <th>foliation or pagination</th>
+                                    <td x-text="(await getMSInfo()).manuscript.foliation_or_pagination"></td>
+                                </tr>
+                                <template x-for="(fvalue, fname) in (await getCodicologyFiltered()).info">
+                                    <tr x-data="getPrintableValues(fname, fvalue)">
+
+                                        <th><div class="field-name"><span x-text="name"></span></div></th>
+                                        <td>
+                                            <span x-text="value"></span> <!-- <a data-popup="yes" href="{{ ms_comment_add_url_with_parameters }}{{ field }}">+</a>-->
+                                            <template x-for="comment in (await getCodicologyInfo()).debate">
+                                            
+                                                <template x-if="comment.field_name == fname">
+                                                    <a class="debate-link" x-bind:href="'#debate-'+comment.id" x-bind:title="comment.text">*</a>
+                                                </template>
+
+                                            </template>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </table>
+
+                            <template x-if="(await getQuiresInfo()).data?.length">
+                                <div class="openbox open-lvl-1" x-data="{ open2: false }">
+                                    <button @click="open2 = ! open2" class="toggle" x-bind:opened="open2"><span class="printIt title">Quires</span></button>
+                                    
+                                    <div class="open-inside"  x-show="open2" x-transition x-transition:enter.scale.80 x-transition:enter.duration.1500ms x-transition.scale.origin.top>
+                                        <table x-init="init_quires_table()" id="quires" class="table printIt table-striped  table-bordered table-hover" style="width:100%"></table>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <div class="openbox open-lvl-1" x-data="{ open2: false }">
+                                <button @click="open2 = ! open2" class="toggle" x-bind:opened="open2"><span class="printIt title">Script</span></button>
+                                
+                                <div class="open-inside" x-show="open2" x-transition x-transition:enter.scale.80 x-transition:enter.duration.1500ms x-transition.scale.origin.top>
+                                    
+                                    <div class="openbox open-lvl-2" x-data="{ open3: false }">
+                                        <button @click="open3 = ! open3" class="toggle" x-bind:opened="open3"><span class="printIt title">Main Hands</span></button>
+                                        
+                                        <div class="open-inside"  x-show="open3" x-transition x-transition:enter.scale.80 x-transition:enter.duration.1500ms x-transition.scale.origin.top>
+                                            <table x-init="init_main_hands()" id="main_hands" class="table printIt table-striped  table-bordered table-hover" style="width:100%"></table>      
+                                        </div>
+                                    </div>
+                                
+                                    <div class="openbox open-lvl-2" x-data="{ open3: false }">
+                                        <button @click="open3 = ! open3" class="toggle" x-bind:opened="open3"><span class="printIt title">Hands of the additions</span></button>
+                                        
+                                        <div class="open-inside"  x-show="open3" x-transition x-transition:enter.scale.80 x-transition:enter.duration.1500ms x-transition.scale.origin.top>
+                                            <table x-init="init_additions_hands" id="additions_hands" class="table printIt table-striped  table-bordered table-hover" style="width:100%"></table>      
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="openbox open-lvl-1" x-data="{ open2: false }">
+                                <button @click="open2 = ! open2" class="toggle" x-bind:opened="open2"><span class="printIt title">Layouts</span></button>
+                                
+                                <div class="open-inside"  x-show="open2" x-transition x-transition:enter.scale.80 x-transition:enter.duration.1500ms x-transition.scale.origin.top>
+                                    <table x-init="init_layouts_table" id="layouts" class="table printIt table-striped  table-bordered table-hover" style="width:100%"></table>
+                                </div>
+                            </div>
+
+                            <template x-if="(await getMusicNotationInfo()).data">
+                                <div class="openbox open-lvl-1" x-data="{ open2: false }">
+                                    <button @click="open2 = ! open2" class="toggle" x-bind:opened="open2"><span class="printIt title">Music Notation</span></button>
+                                    
+                                    <div class="open-inside"  x-show="open2" x-transition x-transition:enter.scale.80 x-transition:enter.duration.1500ms x-transition.scale.origin.top>
+                                        <div>
+                                            <p x-text="(await getMSInfo()).manuscript.music_notation_comments"></p>
+
+                                            <table x-init="init_music_table" id="music_notation" class="table printIt table-striped  table-bordered table-hover" style="width:100%"></table>
+                
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <template x-if="(await getWatermarksInfo()).info">
+                                <div class="openbox open-lvl-1" x-data="{ open2: false }">
+                                    <button @click="open2 = ! open2" class="toggle" x-bind:opened="open2"><span class="printIt title">Watermarks</span></button>
+                                    
+                                    <div class="open-inside"  x-show="open2" x-transition x-transition:enter.scale.80 x-transition:enter.duration.1500ms x-transition.scale.origin.top>
+                                        <div>
+                                            <table x-init="init_watermarks_table" id="watermarks" class="table printIt table-striped  table-bordered table-hover" style="width:100%"></table>
+                
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template x-if="(await getBindingInfo()).info">
+                <div class="openbox open-lvl-0" x-data="{ open: false }">
+                    <button @click="open = ! open" class="toggle" x-bind:opened="open"><img class="button-icon" src="/static/img/icons/binding.svg"></img><span class="printIt title">Binding</span></button>
+                    
+                    <div class="open-inside" x-show="open" x-transition x-transition:enter.scale.80 x-transition:enter.duration.1500ms x-transition.scale.origin.top>
+                        <div>
+                            <!--<table id="binding" class="table printIt table-striped  table-bordered table-hover" style="width:100%"></table>-->
+                            
+                            <!--
+                            <iframe style="width:100%; height: 600px;" src="https://vceditor.library.upenn.edu/project/6597f90c5d6968000142d7cd/viewOnly" title="W3Schools Free Online Web Tutorials"></iframe>
+                            -->
+
+                            <table class="printIt">
+                                <tr>
+                                    <th>Height (max)</th>
+                                    <td x-text="(await getBindingInfo()).info.max_height + ' mm'"></td>
+                                </tr>
+                                <tr>
+                                    <th>Width (max)</th>
+                                    <td x-text="(await getBindingInfo()).info.max_width + ' mm'"></td>
+                                </tr>
+                                <tr>
+                                    <th>Block (max)</th>
+                                    <td x-text="(await getBindingInfo()).info.block_max + ' mm'"></td>
+                                </tr>
+                                <tr>
+                                    <th>Date</th>
+                                    <td x-text="(await getBindingInfo()).info.date"></td>
+                                </tr>
+                                <tr>
+                                    <th>Place of origins</th>
+                                    <td x-text="(await getBindingInfo()).info.place_of_origins"></td>
+                                </tr>
+                                <tr>
+                                    <th>Type of binding</th>
+                                    <td x-text="(await getBindingInfo()).info.type_of_binding"></td>
+                                </tr>
+                                <tr>
+                                    <th>Style of binding</th>
+                                    <td x-text="(await getBindingInfo()).info.style_of_binding"></td>
+                                </tr>
+                                <tr>
+                                    <th>Material</th>
+                                    <td x-text="(await getBindingInfo()).info.materials"></td>
+                                </tr>
+                                <tr>
+                                    <th>Decoration</th>
+                                    <td x-text="(await getBindingInfo()).info.decorations"></td>
+                                </tr>
+                                <tr>
+                                    <th>Decoration comment</th>
+                                    <td x-text="(await getBindingInfo()).info.decoration_comment"></td>
+                                </tr>
+                                <tr>
+                                    <th>General comments</th>
+                                    <td x-text="(await getBindingInfo()).info.general_comments"></td>
+                                </tr>
+                                <tr>
+                                    <th>Authors</th>
+                                    <td x-text="(await getBindingInfo()).info.authors"></td>
+                                </tr>
+                                <tr>
+                                    <th>Data contributor</th>
+                                    <td x-text="(await getBindingInfo()).info.data_contributor"></td>
+                                </tr>
+                                <tr>
+                                    <th>Entry date</th>
+                                    <td x-text="(await getBindingInfo()).info.entry_date"></td>
+                                </tr>
+
+
+                            </table>
+                        
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            
+            <template x-if="(await getDecorationInfo()).data?.length">
+                <div class="openbox open-lvl-0" x-data="{ open: false }">
+                    <button @click="open = ! open" class="toggle" x-bind:opened="open"><img class="button-icon" src="/static/img/icons/decoration.svg"></img><span class="printIt title">Decoration</span></button>
+                    
+                    <div class="open-inside" x-show="open" x-transition x-transition:enter.scale.80 x-transition:enter.duration.1500ms x-transition.scale.origin.top>
+                        <div>
+                            
+                            <p class="printIt" x-text="(await getMSInfo()).manuscript.decoration_comments"></p>
+                    
+
+                            <table x-init="init_decoration_table" id="decoration" class="table printIt table-striped  table-bordered table-hover" style="width:100%"></table>
+                            
+                            <h2>Comments:</h2>
+                            <ol  class="printIt" >
+                                <template x-for="datarow in (await getDecorationInfo()).data">
+                                    <li x-text="datarow.comments">
+                                    </li>
+                                </template>
+                            </ol>
+
+                        </div>
+                    </div>
+                    
+                </div>
+            </template>
+
+            <template x-if="(await getConditionInfo()).data?.length">
+                <div class="openbox open-lvl-0" x-data="{ open: false }">
+                    <button @click="open = ! open" class="toggle" x-bind:opened="open"><img class="button-icon" src="/static/img/icons/condition.svg"></img><span class="printIt title">Condition</span></button>
+                    
+                    <div class="open-inside" x-show="open" x-transition x-transition:enter.scale.80 x-transition:enter.duration.1500ms x-transition.scale.origin.top>
+                        <div>
+                            <table class="printIt">
+                                <template x-for="(fvalue, fname) in ((await getConditionInfo()).data[0])">
+                                    <tr x-data="getPrintableValues(fname, fvalue)">
+
+                                        <th>
+                                            <div class="field-name"><span x-text="name"></span></div>
+                                        </th>
+                                        <td>
+                                            <span x-text="value"></span> <!-- <a data-popup="yes" href="{{ ms_comment_add_url_with_parameters }}{{ field }}">+</a>-->
+                                        </td>
+                                    </tr>
+                                </template>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+
+            <div class="openbox open-lvl-0" x-data="{ open: false }">
+                <button @click="open = ! open" class="toggle" x-bind:opened="open"><img class="button-icon" src="/static/img/icons/content.svg"></img><span class="printIt title">Content</span></button>
+                
+                <div class="open-inside" x-show="open" x-transition x-transition:enter.scale.80 x-transition:enter.duration.1500ms x-transition.scale.origin.top>
+
+                    <div>
+                        <table x-init="init_content_table" id="content" class="table printIt table-striped  table-bordered table-hover" style="width:100%">
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+
+            <template x-if="(await getOriginsInfo()).data?.length">
+                <div class="openbox open-lvl-0" x-data="{ open: false }">
+                    <button @click="open = ! open" class="toggle" x-bind:opened="open"><img class="button-icon" src="/static/img/icons/history.svg"></img><span class="printIt title">History of the manuscript</span></button>
+                    
+                    <div class="open-inside" x-show="open" x-transition x-transition:enter.scale.80 x-transition:enter.duration.1500ms x-transition.scale.origin.top>
+
+
+                        <div class="openbox open-lvl-1" x-data="{ open2: false }">
+                            <button @click="open2 = ! open2" class="toggle" x-bind:opened="open2"><span class="printIt title">Origins and dating</span></button>
+                            
+                            <div class="open-inside"  x-show="open2" x-transition x-transition:enter.scale.80 x-transition:enter.duration.1500ms x-transition.scale.origin.top>
+                                <table  x-init="init_origins_table" id="origins" class="table printIt table-striped  table-bordered table-hover" style="width:100%"></table>
+                            </div>
+                        </div>
+
+                        <template x-if="(await getProvenanceInfo()).data?.length">
+                            <div class="openbox open-lvl-1" x-data="{ open2: false }">
+                                <button @click="open2 = ! open2" class="toggle" x-bind:opened="open2"><span class="printIt title">Provenance History</span></button>
+                                
+                                <div class="open-inside" x-show="open2" x-on:transitionstart="map_refresh()" x-transition x-transition:enter.scale.80 x-transition:enter.duration.1500ms x-transition.scale.origin.top>
+                                    <div>
+
+                                        <table x-init="init_provenance_table" id="provenance" class="table printIt table-striped  table-bordered table-hover" style="width:100%"></table>
+                                        <!--
+                                        <table id="provenance" class="table printIt table-striped  table-bordered table-hover" style="width:100%">
+                                            <thead>
+                                                <tr>    
+                                                    <template x-for="column in (await getProvenanceColumns())">   
+                                                            <th>
+                                                                <span x-text="column"></span>
+                                                            </th>
+                                                    </template>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <template x-for="datarow in (await getProvenanceInfo()).data">  
+                                                    <tr>
+                                                        <template x-for="(fvalue, fname) in datarow">
+                                                            <td  x-data="getPrintableValues(fname, fvalue)">
+                                                                <span x-text="value"></span>
+                                                                <template x-for="comment in (await getProvenanceInfo()).debate">
+                                                                
+                                                                    <template x-if="comment.field_name == fname">
+                                                                        <a class="debate-link" x-bind:href="'#debate-'+comment.id" x-bind:title="comment.text">*</a>
+                                                                    </template>
+                        
+                                                                </template>
+                                                            </td>
+                                                        </template>
+                                                    </tr>
+                                                </template>
+                                            </tbody>
+                                        </table>
+                                        -->
+
+                                        <div id="map" x-init="map_init()"></div>
+                                        
+                                        <h3>Comments:</h3>
+                                        <p class="printIt" x-text="(await getOriginsInfo()).data[0].provenance_comments"></p>
+
+
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+            <template x-if="(await getBibliographyInfo()).data?.length">
+                <div class="openbox open-lvl-0" x-data="{ open: false }">
+                    <button @click="open = ! open" class="toggle" x-bind:opened="open"><img class="button-icon" src="/static/img/icons/bibliography.svg"></img><span class="printIt title">Bibliography</span></button>
+                    
+                    <div class="open-inside" x-show="open" x-transition x-transition:enter.scale.80 x-transition:enter.duration.1500ms x-transition.scale.origin.top>
+                        
+                        <!--    
+                        <div class="verticalTable" x-html="(await getBooksHTML())">
+                            Loading...<div class="loading-spinner"></div>
+                        </div>
+                        -->
+                        <div>
+                            <table  x-init="init_bibliography_table" id="bibliography" class="table printIt table-striped  table-bordered table-hover" style="width:100%"></table>
+                            <a class="action_button" x-bind:href="'/bibliography_export/?ms='+(await getMSInfo()).manuscript.id" x-bind:download="(await getMSInfo()).manuscript.name+' bibliography.bib'">Save all to Zotero compatible BibTeX .bib file</a>    
+                        
+                        </div>
+                    </div>
+
+                </div>
+            </template>
+
+            <button type="button" id="btnPrint" class="action_button"><img class="button-icon" src="/static/img/icons/print.svg" /> Print</button>
+            <a class="action_button" target="_blank" x-bind:href="'/ms_tei/?ms='+(await getMSInfo()).manuscript.id">TEI XML File</a>
+
+        
+        </div>
+    </div>
+</div>
+

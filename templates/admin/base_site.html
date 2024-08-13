@@ -1,0 +1,33 @@
+{% extends 'admin/base.html' %}
+
+
+{% block extrahead %}
+    <!-- <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.js" />-->
+    <!--<script type="text/javascript" src="/js/vendor/jquery-2.1.0.min.js"></script>-->
+<!--
+    <link href="{{ STATIC_URL }}css/vendor/leaflet.css" type="text/css" media="screen" rel="stylesheet" />
+    <link href="{{ STATIC_URL }}css/osm_field.css" type="text/css" media="screen" rel="stylesheet" />
+    <script type="text/javascript" src="{{ STATIC_URL }}js/vendor/leaflet.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/osm_field.js"></script>
+-->
+
+<style>
+    .horizontal-radios label {
+    display: inline-block;
+    margin-right: 10px;  /* Adjust the margin as needed */
+}
+
+.inline, .inline label, .inline div {
+    display: inline-block;
+    width: auto;
+}
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1>Manuscript Indexer - Admin</h1>
+
+{{ form.media }}
+<script type="text/javascript" src="/static/js/popupfix.js"></script>
+{% endblock %}
+

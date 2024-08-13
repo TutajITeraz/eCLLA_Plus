@@ -1,0 +1,11 @@
+
+<div  id="assistant" x-init="assistant_init()">
+    <img src="/static/img/magpie.jpg" style="max-width: 128px; display: inline-block;">
+    <h1 style="vertical-align: middle; display: inline-block;">AI Database Assistant</h1>
+
+    <textarea name="question" id="question" rows="3"placeholder="Ask me... e.g. 'How much content does manuscripts have?' or 'List all formulas that starts with letter A'"></textarea>
+    <button id="askBtn" onclick="askQuestion()">Ask me...</button>
+    <div id="loader">Loading...(can take up to 20sec)</div>
+    <div id="answer"></div>
+
+</div>
