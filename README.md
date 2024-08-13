@@ -1,3 +1,31 @@
+# About the eCLLA project
+
+eCLLA project - an online catalog and Integrated Tool for the Study of Latin Liturgical Manuscripts.
+CLLA stands for Codices Liturgici Latini Antiquiores.
+
+The project aims to create an interactive catalog of Latin liturgical manuscripts available via the website. This catalog will contain a general description of the manuscript, its bibliography, and will also enable the introduction of information about its contents regarding many different disciplines (rites, formulas, liturgy, codicology, musicology, decoration, paleography and others).
+
+## Sample screanshoots:
+
+### Listing and filtering Manuscripts
+![Listing and filtering Manuscripts](README_assets/list_filtering.png?raw=true "Listing and filtering Manuscripts")
+### Manuscript details and IIIF browser
+![Manuscript details](README_assets/ms_details.png?raw=true "Manuscript details")
+### Compare content
+![Compare content](README_assets/compare_content.png?raw=true "Compare content")
+### Graph of formulas order in the Manuscripts
+![Graph of formulas order in the Manuscripts](README_assets/order_graph.png?raw=true "Graph of formulas order in the Manuscripts")
+### Calculate similarity of the Manuscripts
+![Calculate similarity of the Manuscripts](README_assets/similarity.png?raw=true "Calculate similarity of the Manuscripts")
+
+### Other Features:
+- Integratet IIIF viewer
+- Integrated AI Assistant (via DUBO)
+- Zotero Bibliography integration
+- .csv data import with checks and foreign keys lookup
+- XML TEI export (basic data only)
+- Export to print
+
 # Installing database engine
 
 ## For manjaro linux:
