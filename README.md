@@ -1,15 +1,18 @@
-#Installing database engine
+# Installing database engine
 
-#For manjaro linux:
+## For manjaro linux:
+```
     sudo pacman -Syu
     sudo pacman -S mariadb
-
-#For ubuntu linux:
+```
+## For ubuntu linux:
+```
     sudo apt update
     sudo apt install mariadb-server
     sudo mysql_secure_installation
-
-#Configuring database engine:
+```
+## Configuring database engine:
+```
     sudo mariadb-install-db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
     sudo systemctl enable mariadb --now
 
@@ -22,21 +25,24 @@
 
         FLUSH PRIVILEGES;
         exit
+```
 
 
-
-#Configuration:
+# Configuration:
 Edit the ritus_indexer/settings.py:
 
 Add your host to the variables:
+```
 ALLOWED_HOSTS
 CSRF_TRUSTED_ORIGINS
 CORS_ALLOWED_ORIGINS
-
+```
 Edit username and password for the database:
+```
 DATABASES
-
-#example DATABASES config:
+```
+## example DATABASES config:
+```
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -47,12 +53,12 @@ DATABASES = {
         'HOST': '127.0.0.1',
     }
 }
+```
 
 
+# Installation
 
-#Installation
-
-#Following commands must be executed in the project directory!
+## Following commands must be executed in the project directory!
 ```
 
 #Check pip version:
@@ -89,13 +95,13 @@ python manage.py collectstatic
 
 ```
 
-#To use dubo (SQL assistant):
+## To use dubo (SQL assistant):
 
 ```
 export DUBO_API_KEY="pk.bb63cda35d47463fb858192bee22510f"
 ```
 
-#Run server:
+## Run server:
 
 ```
 python manage.py runserver 0.0.0.0:8080
@@ -103,10 +109,10 @@ python manage.py runserver 0.0.0.0:8080
 
 
 
-#Every time you want to run the project, you have to activate the environment first:
+### Every time you want to run the project, you have to activate the environment first:
 	source .venv/bin/activate
-#And then run the mysql server
+### And then run the mysql server
     sudo systemctl enable mariadb --now
-#And finaly run the indexer django server:
+### And finaly run the indexer django server:
 	python manage.py runserver 0.0.0.0:8080
 
