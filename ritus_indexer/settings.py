@@ -26,10 +26,15 @@ SECRET_KEY = 'django-insecure-jd5!mnhkl3&ujw!&ktu54(n=vi%1fi$d4kd)g_@ut%gymz4vo@
 DEBUG = False
 
 
-ALLOWED_HOSTS = ['indexer.rebold.hostline.net.pl','server.hostline.pl']
+ALLOWED_HOSTS = ['eclla.henrybradshawsociety.org']
 
-CSRF_TRUSTED_ORIGINS = ['http://indexer.rebold.hostline.net.pl','https://indexer.rebold.hostline.net.pl']
+CSRF_TRUSTED_ORIGINS = ['http://eclla.henrybradshawsociety.org/','https://eclla.henrybradshawsociety.org/']
 
+SESSION_COOKIE_DOMAIN_DYNAMIC = ['.henrybradshawsociety.org']
+CORS_ALLOW_CREDENTIALS = True
+SESSION_COOKIE_HTTPONLY=False
+SESSION_COOKIE_SAMESITE = None
+CRSF_COOKIE_SAMESITE = None
 
 # Application definition
 
@@ -74,6 +79,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'iommi.sql_trace.Middleware',
     'iommi.profiling.Middleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -85,13 +91,8 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'ritus_indexer.urls'
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # Replace with the origin of your frontend
-    "http://indexer.rebold.hostline.net.pl",
-	"https://indexer.rebold.hostline.net.pl",
-    "https://polona.pl",
-    "https://collections.library.yale.edu",
-    "http://polona.pl",
-    "http://collections.library.yale.edu",
+	"http://eclla.henrybradshawsociety.org/",
+    "https://eclla.henrybradshawsociety.org/"
 ]
 
 import os
@@ -180,7 +181,13 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_ROOT =  os.path.join(BASE_DIR, 'media')
-MEDIA_URL = '/media/'
+if DEBUG:
+    MEDIA_URL = '/media/'
 
 
-
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}

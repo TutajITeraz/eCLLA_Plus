@@ -1,13 +1,29 @@
 var user="";
 
+let loc = window.location.protocol + '//' + window.location.hostname;
+
+let pageRoot=loc;
+let projectId=0;//All
+let foreign_id_name='CLLA no.';
+
+pageRoot="https://eclla.henrybradshawsociety.org";
+projectId=1;//eCLLA
+
+window.pageRoot = pageRoot;
+window.projectId= projectId;
+window.foreign_id_name = foreign_id_name;
+
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 
 const page = urlParams.get('p');
 
+if(!page)
+    page = "about";
+
 (function() { // Scoping function to avoid globals
     var src = page+".js"
-    document.write('<script src="/static/js/' + src + '"><\/script>');
+    document.write('<script src="'+pageRoot+'/static/js/' + src + '"><\/script>');
 })();
 
 let main_info_lock = false; // Flag to check if the request is in progress
@@ -28,7 +44,9 @@ async function fetchOnce(url) {
 
     try {
       // Use AJAX to fetch data from the specified URL
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        credentials: 'include'
+      });
       fetchOnceData[url] = await response.json();
     } finally {
       // Release the lock
@@ -54,7 +72,7 @@ function start() {
 }
 
 async function getMainInfo() {
-    return fetchOnce(`/main_info/`);
+    return fetchOnce(pageRoot+`/main_info/`);
   }
 
 async function getUsername()
@@ -63,12 +81,27 @@ async function getUsername()
     const user = main_info.username
 
     if( user == "")
-        window.location.href = "/login/";
+	    //alert('no user');
+        window.location.href = "/static/login.html";
 
     return user;
 }
 
 getUsername();
+
+
+async function canUserImport()
+{
+    const main_info = await getMainInfo();
+    return main_info.import_permissions;
+}
+
+async function canUserVisitAdmin()
+{
+    const main_info = await getMainInfo();
+    return main_info.is_staff;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -82,7 +115,7 @@ function foliationPagination(value)
 
 function renderImg( data, type, row, meta ) {
     if(!data) return 'no preview';
-        else return '<img style="max-width:150px" src="/media/'+data+'"></img>';
+        else return '<img style="max-width:150px" src="'+pageRoot+'/media/'+data+'"></img>';
 }
 
 function removeZeros(value)
@@ -115,7 +148,7 @@ const fieldProcessors = {
 }
 
 const displayNames = {
-    'foreign_id': "CLLA no.",    //W PL będzie "MSPL no."
+    'foreign_id': foreign_id_name,    //W PL będzie "MSPL no."
     'rism_id': "RISM",
 }
 
