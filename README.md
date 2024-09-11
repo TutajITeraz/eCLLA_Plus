@@ -59,6 +59,13 @@ The project aims to create an interactive catalog of Latin liturgical manuscript
 # Configuration:
 Edit the ritus_indexer/settings.py:
 
+Generate new SECRET_KEY:
+```
+./manage.py shell -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+```
+
+And paste it to the SECRET_KEY string in settings.py
+
 Add your host to the variables:
 ```
 ALLOWED_HOSTS
@@ -121,12 +128,6 @@ sudo mysql -u root -h localhost -p ritus < ~/Downloads/reboldho_indexer.sql
 #Setup static files (may be served using nginex apache or other server):
 python manage.py collectstatic
 
-```
-
-## To use dubo (SQL assistant):
-
-```
-export DUBO_API_KEY="pk.bb63cda35d47463fb858192bee22510f"
 ```
 
 ## Run server:
