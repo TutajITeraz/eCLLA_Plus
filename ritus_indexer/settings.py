@@ -23,14 +23,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-jd5!mnhkl3&ujw!&ktu54(n=vi%1fi$d4kd)g_@ut%gymz4vo@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
+
+ALLOWED_HOSTS = ['localhost','127.0.0.1', 'eclla.hostline.net.pl']
+
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1','https://127.0.0.1','http://indexer.rebold.hostline.net.pl','https://indexer.rebold.hostline.net.pl', 'https://eclla.hostline.net.pl', 'http://eclla.hostline.net.pl', 'https://lp.hostline.net.pl', 'http://lp.hostline.net.pl']
 
 
-ALLOWED_HOSTS = ['eclla.henrybradshawsociety.org']
-
-CSRF_TRUSTED_ORIGINS = ['http://eclla.henrybradshawsociety.org/','https://eclla.henrybradshawsociety.org/']
-
-SESSION_COOKIE_DOMAIN_DYNAMIC = ['.henrybradshawsociety.org']
+SESSION_COOKIE_DOMAIN_DYNAMIC = ['.hostline.net.pl']
 CORS_ALLOW_CREDENTIALS = True
 SESSION_COOKIE_HTTPONLY=False
 SESSION_COOKIE_SAMESITE = None
@@ -48,14 +48,19 @@ INSTALLED_APPS = [
     'indexerapp.apps.IndexerappConfig',
     'data_browser',
     'admin_searchable_dropdown',
+    # 'jquery',
     'dal',
     'dal_select2',
     'corsheaders',
-	'rest_framework_datatables',
+    'rest_framework_datatables',
     'django_filters',
     'modelclone',
     'iommi',
+    #'osm_field'
+    #'zotero'
 ]
+
+
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
@@ -83,7 +88,6 @@ MIDDLEWARE = [
     'iommi.sql_trace.Middleware',
     'iommi.profiling.Middleware',
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'iommi.middleware',
 ]
@@ -91,9 +95,17 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'ritus_indexer.urls'
 
 CORS_ALLOWED_ORIGINS = [
-	"http://eclla.henrybradshawsociety.org/",
-    "https://eclla.henrybradshawsociety.org/"
+    "http://localhost:3000",  # Replace with the origin of your frontend
+    "http://indexer.rebold.hostline.net.pl",
+    "https://polona.pl",
+    "https://collections.library.yale.edu",
+    "http://polona.pl",
+    "http://collections.library.yale.edu",
+    "http://eclla.hostline.net.pl",
+    "https://eclla.hostline.net.pl"
 ]
+
+
 
 import os
 
@@ -123,9 +135,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
 		'CONN_MAX_AGE': 0,
-        'NAME': 'reboldho_indexer',
-        'USER': 'reboldho_indexer',
-        'PASSWORD': 'bazaIndekseraSame0',
+        'NAME': 'ritus',
+        'USER': 'ritus_user',
+        'PASSWORD': 'SoftCatEarZ1563!',
         'HOST': '127.0.0.1',
     }
 }
@@ -174,6 +186,7 @@ STATICFILES_DIRS = [
 STATIC_ROOT = BASE_DIR / 'static_assets'
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

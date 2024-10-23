@@ -120,6 +120,22 @@ class DecorationSubjectsForm(forms.ModelForm):
             'subject': autocomplete.ModelSelect2(url='subject-autocomplete', attrs={'style': 'width: 200px;'})
         }
 
+class DecorationColoursForm(forms.ModelForm):
+    class Meta:
+        model = Colours
+        fields = ('__all__')
+        widgets = {
+            'colour': autocomplete.ModelSelect2(url='colours-autocomplete', attrs={'style': 'width: 200px;'})
+        }
+
+class DecorationCharacteristicsForm(forms.ModelForm):
+    class Meta:
+        model = Characteristics
+        fields = ('__all__')
+        widgets = {
+            'colour': autocomplete.ModelSelect2(url='characteristics-autocomplete', attrs={'style': 'width: 200px;'})
+        }
+
 class EditionContentForm(forms.ModelForm):
     class Meta:
         model = EditionContent
@@ -181,6 +197,34 @@ class DecorationSubjectsInline(admin.StackedInline):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':40})},
     }
 
+# New inlines
+class DecorationColoursInline(admin.StackedInline):
+    model = DecorationColours
+    extra = 0
+
+    form = DecorationColoursForm
+
+    show_change_link=True
+
+    formfield_overrides = {
+        models.CharField: {'widget': TextInput(attrs={'size':'20'})},
+        models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':40})},
+    }
+
+# New inlines
+class DecorationCharacteristicsInline(admin.StackedInline):
+    model = DecorationCharacteristics
+    extra = 0
+
+    form = DecorationCharacteristicsForm
+
+    show_change_link=True
+
+    formfield_overrides = {
+        models.CharField: {'widget': TextInput(attrs={'size':'20'})},
+        models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':40})},
+    }
+
 
 class ManuscriptBibliographyInline(admin.TabularInline):
     model = ManuscriptBibliography
@@ -217,6 +261,17 @@ class ProvenanceInline(admin.TabularInline):
 
 class ManuscriptBindingMaterialsInline(admin.TabularInline):
     model = ManuscriptBindingMaterials
+    extra = 0
+
+    show_change_link=True
+
+    formfield_overrides = {
+        models.CharField: {'widget': TextInput(attrs={'size':'20'})},
+        models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':40})},
+    }
+
+class ManuscriptBindingComponentsInline(admin.TabularInline):
+    model = ManuscriptBindingComponents
     extra = 0
 
     show_change_link=True
@@ -398,7 +453,7 @@ class ManuscriptsAdmin(admin.ModelAdmin):
 
 class ManuscriptsAdmin(CustomDebateableAdmin):
 
-    inlines = [ManuscriptBibliographyInline, OriginsInline, ProvenanceInline, ManuscriptBindingMaterialsInline, ManuscriptGenresInline ]
+    inlines = [ManuscriptBibliographyInline, OriginsInline, ProvenanceInline, ManuscriptBindingMaterialsInline, ManuscriptBindingComponentsInline, ManuscriptGenresInline ]
 
     list_display= [field.name for field in Manuscripts._meta.fields
                              #if not isinstance(field, models.ForeignKey)
@@ -636,6 +691,19 @@ class BindingMaterialsAdmin(admin.ModelAdmin):
 class ManuscriptBindingMaterialsAdmin(CustomDebateableAdmin):
     list_display=  ['id','manuscript','material']
 
+
+#BindingComponents
+class BindingComponentsAdmin(admin.ModelAdmin):
+    list_display=  [field.name for field in BindingComponents._meta.fields
+                             #if not isinstance(field, models.ForeignKey)
+                             ]
+
+#ManuscriptBindingComponents
+class ManuscriptBindingComponentsAdmin(admin.ModelAdmin):
+    list_display=  [field.name for field in ManuscriptBindingComponents._meta.fields
+                             #if not isinstance(field, models.ForeignKey)
+                             ]
+
 #BindingDecorationTypes
 class BindingDecorationTypesAdmin(admin.ModelAdmin):
     list_display=  [field.name for field in BindingDecorationTypes._meta.fields
@@ -740,9 +808,9 @@ class SubjectsAdmin(admin.ModelAdmin):
                              ]
 
 
-#DecorationCharacteristics
-class DecorationCharacteristicsAdmin(admin.ModelAdmin):
-    list_display=  [field.name for field in DecorationCharacteristics._meta.fields
+#Characteristics
+class CharacteristicsAdmin(admin.ModelAdmin):
+    list_display=  [field.name for field in Characteristics._meta.fields
                              #if not isinstance(field, models.ForeignKey)
                              ]
 
@@ -774,14 +842,26 @@ class DecorationForm(forms.ModelForm):
 
         }
 
+
+class DecorationForm(forms.ModelForm):
+    class Meta:
+        model = Decoration
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Filter decoration_type to only show DecorationTypes with no parent_type
+        self.fields['decoration_type'].queryset = DecorationTypes.objects.filter(parent_type__isnull=True)
+
+        # Filter decoration_subtype to only show DecorationTypes with a parent_type
+        self.fields['decoration_subtype'].queryset = DecorationTypes.objects.filter(parent_type__isnull=False)
+
+
 class DecorationAdmin(CustomDebateableAdmin):
     form = DecorationForm
+    inlines = [DecorationSubjectsInline, DecorationColoursInline, DecorationCharacteristicsInline]
 
-    inlines = [DecorationSubjectsInline]
-
-    list_display=  [field.name for field in Decoration._meta.fields
-                             #if not isinstance(field, models.ForeignKey)
-                             ]
+    list_display=  ['id','manuscript','original_or_added', 'where_in_ms_from', 'where_in_ms_to', 'decoration_type', 'decoration_subtype', 'ornamented_text' ]
 
     list_display = ["where_in_ms_start" if x == "where_in_ms_from" else x for x in list_display]
     list_display = ["where_in_ms_end" if x == "where_in_ms_to" else x for x in list_display]
@@ -795,6 +875,22 @@ class DecorationSubjectsAdmin(CustomDebateableAdmin):
                              #if not isinstance(field, models.ForeignKey)
                              ]
 
+class DecorationColoursAdmin(CustomDebateableAdmin):
+
+    form = DecorationColoursForm
+
+    list_display=  [field.name for field in DecorationColours._meta.fields
+                             #if not isinstance(field, models.ForeignKey)
+                             ]
+
+class DecorationCharacteristicsAdmin(CustomDebateableAdmin):
+
+    form = DecorationCharacteristicsForm
+
+    list_display=  [field.name for field in DecorationCharacteristics._meta.fields
+                             #if not isinstance(field, models.ForeignKey)
+                             ]
+                             
 class ManuscriptBibliographyAdmin(CustomDebateableAdmin):
     list_display=  [field.name for field in ManuscriptBibliography._meta.fields
                              #if not isinstance(field, models.ForeignKey)
@@ -834,6 +930,8 @@ admin.site.register(ManuscriptBindingDecorations,ManuscriptBindingDecorationsAdm
 admin.site.register(BindingDecorationTypes,BindingDecorationTypesAdmin)
 admin.site.register(ManuscriptBindingMaterials,ManuscriptBindingMaterialsAdmin)
 admin.site.register(BindingMaterials,BindingMaterialsAdmin)
+admin.site.register(BindingComponents,BindingComponentsAdmin)
+admin.site.register(ManuscriptBindingComponents,ManuscriptBindingComponentsAdmin)
 admin.site.register(Binding,BindingAdmin)
 admin.site.register(BindingStyles,BindingStylesAdmin)
 admin.site.register(BindingTypes,BindingTypesAdmin)
@@ -848,13 +946,15 @@ admin.site.register(AttributeDebate,AttributeDebateAdmin)
 
 admin.site.register(DecorationTypes,DecorationTypesAdmin)
 admin.site.register(DecorationTechniques,DecorationTechniquesAdmin)
-admin.site.register(DecorationCharacteristics,DecorationCharacteristicsAdmin)
+admin.site.register(Characteristics,CharacteristicsAdmin)
 admin.site.register(Subjects,SubjectsAdmin)
 admin.site.register(Colours,ColoursAdmin)
 admin.site.register(FeastRanks,FeastRanksAdmin)
 admin.site.register(Decoration,DecorationAdmin)
 admin.site.register(Calendar,CalendarAdmin)
 admin.site.register(DecorationSubjects,DecorationSubjectsAdmin)
+admin.site.register(DecorationColours,DecorationColoursAdmin)
+admin.site.register(DecorationCharacteristics,DecorationCharacteristicsAdmin)
 admin.site.register(ManuscriptBibliography,ManuscriptBibliographyAdmin)
 admin.site.register(Layouts,LayoutsAdmin)
 admin.site.register(UserOpenAIAPIKey,UserOpenAIAPIKeyAdmin)

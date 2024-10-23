@@ -9,6 +9,11 @@ let foreign_id_name='CLLA no.';
 pageRoot="https://eclla.henrybradshawsociety.org";
 projectId=1;//eCLLA
 
+if(loc == "http://127.0.0.1")
+{
+  pageRoot="http://127.0.0.1:8000";
+}
+
 window.pageRoot = pageRoot;
 window.projectId= projectId;
 window.foreign_id_name = foreign_id_name;

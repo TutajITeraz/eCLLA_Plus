@@ -1,18 +1,45 @@
 
 let manuscriptId = null;
 var map = null;
-var map_bounds =null;
+var map_bounds = null;
 
 manuscriptId = urlParams.get('id')
 
+function setTableHeight() {
+    var windowHeight = $(window).height();
+    var windowWidth = $(window).width();
+    // console.log('height: ', windowWidth);
+    if(windowWidth > 640){
+        var tableHeight = windowHeight - 400;
+    } else {
+        var tableHeight = windowHeight - 370;
+    }
+    
+    
+    $('#manuscriptPage').css('height', tableHeight + 'px');
+}
 
+$(document).ready(function() {
+    console.log('document ready function');
+    setTimeout(function() {
+        setTableHeight();
+    }, 700);  // A small delay ensures elements are fully rendered
+});
+
+
+// Adjust height on window resize
+$(window).resize(function() {
+    setTableHeight();
+});
 
 async function getMSInfo() {
-  return fetchOnce(pageRoot+`/ms_info/?pk=${manuscriptId}`);
+    return fetchOnce(pageRoot + `/ms_info/?pk=${manuscriptId}`);
 }
 
 async function getTEIUrl() {
-    return pageRoot+'/ms_tei/?ms='+(await getMSInfo()).manuscript.id;
+    //return pageRoot + '/ms_tei/?ms=' + (await getMSInfo()).manuscript.id;
+
+    return pageRoot + '/manuscript_tei/?ms=' + (await getMSInfo()).manuscript.id;
 }
 
 async function getMSInfoFiltered() {
@@ -21,7 +48,7 @@ async function getMSInfoFiltered() {
     var infoCod = (await getCodicologyInfo()).info;
 
     return {
-        manuscript:{
+        manuscript: {
             common_name: info.common_name,
             contemporary_repository: info.contemporary_repository_place,
             shelf_mark: info.shelf_mark,
@@ -31,8 +58,8 @@ async function getMSInfoFiltered() {
             liturgical_genre_comment: info.liturgical_genre_comment,
             dating: info.dating,
             dating_comment: info.dating_comment,
-            place_of_origins: info.place_of_origins,
-            place_of_origins_comment: info.place_of_origins_comment,
+            place_of_origin: info.place_of_origin,
+            place_of_origin_comment: info.place_of_origin_comment,
             decorated: info.decorated,
             music_notation: info.music_notation,
 
@@ -46,9 +73,9 @@ async function getMSInfoFiltered() {
             max_page_size: infoCod.page_size_max_height + " mm x "+infoCod.page_size_max_width+" mm " ,
             */
             general_comment: info.general_comment,
-            url: '<a href="'+ info.links +'">'+info.links+'</a>',
-            additional_url:  '<a href="'+ info.additional_url +'">'+info.links+'</a>',
-            iiif_manifest_url: '<a href="'+ info.iiif_manifest_url +'">'+info.iiif_manifest_url+'</a>',
+            url: '<a href="' + info.links + '">' + info.links + '</a>',
+            additional_url: '<a href="' + info.additional_url + '">' + info.links + '</a>',
+            iiif_manifest_url: '<a href="' + info.iiif_manifest_url + '">' + info.iiif_manifest_url + '</a>',
             authors: info.authors,
             data_contributor: info.data_contributor,
             entry_date: info.entry_date,
@@ -57,28 +84,28 @@ async function getMSInfoFiltered() {
 }
 
 async function getCodicologyInfo() {
-    return fetchOnce(pageRoot+`/codicology_info/?pk=${manuscriptId}`);
+    return fetchOnce(pageRoot + `/codicology_info/?pk=${manuscriptId}`);
 }
 
-async function getCodicologyFiltered(){
+async function getCodicologyFiltered() {
     var info = (await getCodicologyInfo()).info;
 
     var infoMS = (await getMSInfo()).manuscript;
 
     var parchment_thickness = info.parchment_thickness_min;
 
-    if(info.parchment_thickness_max != parchment_thickness)
-        parchment_thickness+= " - "+info.parchment_thickness_max
+    if (info.parchment_thickness_max != parchment_thickness)
+        parchment_thickness += " - " + info.parchment_thickness_max
 
     return {
-        info:{
+        info: {
             number_of_parchment_folios: info.number_of_parchment_folios,
             number_of_paper_leaves: info.number_of_paper_leaves,
             parchment_thickness: parchment_thickness,
             parchment_colour: info.parchment_colour,
             parchment_comment: info.parchment_comment,
-            max_page_size: info.page_size_max_width + " mm x "+info.page_size_max_height+" mm " ,
-            max_paper_size: info.paper_size_max_width + " mm x "+info.paper_size_max_height+" mm " ,
+            max_page_size: info.page_size_max_width + " mm x " + info.page_size_max_height + " mm ",
+            max_paper_size: info.paper_size_max_width + " mm x " + info.paper_size_max_height + " mm ",
             main_script: infoMS.main_script,
             how_many_columns_mostly: infoMS.how_many_columns_mostly,
             lines_per_page_usually: infoMS.lines_per_page_usually,
@@ -93,17 +120,16 @@ async function getCodicologyFiltered(){
 }
 
 async function getProvenanceInfo() {
-    return fetchOnce(pageRoot+`/provenance_info/?ms=${manuscriptId}`);
+    return fetchOnce(pageRoot + `/provenance_info/?ms=${manuscriptId}`);
 }
 
 
-async function getProvenanceColumns()
-{
+async function getProvenanceColumns() {
     info = (await getProvenanceInfo())
-    if(info === 'undefined' || info === null )
+    if (info === 'undefined' || info === null)
         return [];
     first_row = info.data[0];
-    if(first_row === 'undefined' || first_row === null )
+    if (first_row === 'undefined' || first_row === null)
         return [];
 
     columns = []
@@ -115,42 +141,41 @@ async function getProvenanceColumns()
 }
 
 async function getBibliographyInfo() {
-    return fetchOnce(pageRoot+`/bibliography_info/?ms=${manuscriptId}`);
+    return fetchOnce(pageRoot + `/bibliography_info/?ms=${manuscriptId}`);
 }
 
 async function getBooksHTML() {
     books = (await getBibliographyInfo()).data;
     booksHTML = ''
-    for( b in books)
-    {
-        booksHTML+=books[b];
+    for (b in books) {
+        booksHTML += books[b];
     }
     return booksHTML;
 
 }
 
 async function getDecorationInfo() {
-    return fetchOnce(pageRoot+`/decoration_info/?ms=${manuscriptId}`); 
+    return fetchOnce(pageRoot + `/decoration_info/?ms=${manuscriptId}`);
 }
 async function getQuiresInfo() {
-    return fetchOnce(pageRoot+`/quires_info/?ms=${manuscriptId}`);
+    return fetchOnce(pageRoot + `/quires_info/?ms=${manuscriptId}`);
 }
 async function getConditionInfo() {
-    return fetchOnce(pageRoot+`/condition_info/?ms=${manuscriptId}`);
+    return fetchOnce(pageRoot + `/condition_info/?ms=${manuscriptId}`);
 }
 async function getCLLAInfo() {
-    return fetchOnce(pageRoot+`/clla_info/?ms=${manuscriptId}`);
+    return fetchOnce(pageRoot + `/clla_info/?ms=${manuscriptId}`);
 }
 async function getOriginsInfo() {
-    return fetchOnce(pageRoot+`/origins_info/?ms=${manuscriptId}`);
+    return fetchOnce(pageRoot + `/origins_info/?ms=${manuscriptId}`);
 }
 
 async function getBindingInfo() {
-    return fetchOnce(pageRoot+`/binding_info/?ms=${manuscriptId}`);
+    return fetchOnce(pageRoot + `/binding_info/?ms=${manuscriptId}`);
 }
 
 async function getMusicNotationInfo() {
-    return fetchOnce(pageRoot+`/music_notation_info/?ms=${manuscriptId}`);
+    return fetchOnce(pageRoot + `/music_notation_info/?ms=${manuscriptId}`);
 }
 
 /*
@@ -159,7 +184,7 @@ async function getHandsInfo() {
 }
 */
 async function getWatermarksInfo() {
-    return fetchOnce(pageRoot+`/watermarks_info/?ms=${manuscriptId}`);
+    return fetchOnce(pageRoot + `/watermarks_info/?ms=${manuscriptId}`);
 }
 async function getBibliographyPrintableInfo() {
     return fetchOnce(pageRoot+`/bibliography_print/?ms=${manuscriptId}`);
@@ -170,20 +195,20 @@ async function getBibliographyPrintableInfo() {
 // LAYOUTS
 var layouts_table;
 
-function init_layouts_table()
-{
+function init_layouts_table() {
     layouts_table = $('#layouts').DataTable({
         "ajax": {
-            "url": pageRoot+'/layouts_info/?ms=' + manuscriptId,
+            "url": pageRoot + '/layouts_info/?ms=' + manuscriptId,
             "dataSrc": function (data) {
                 return data.data;
             }
         },
         "processing": false,
         "serverSide": true,
-        "lengthMenu": [ [10, 25, 50, 100, -1], [10, 25, 50, 100, "All"] ],
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
         "pagingType": "full_numbers",
         "pageLength": 25,
+        "bAutoWidth": false, 
         "columns": [
             {
                 "data": "graph_img",
@@ -192,11 +217,11 @@ function init_layouts_table()
                 /*"render": function (data, type, row, meta) {
                     return renderImg(data, type, row, meta);
                 }*/
-                "visible": false
+                "visible": false,
             },
-            { "data": "name", "title": "Name" },
-            { "data": "where_in_ms_from", "title": "Where in MS From" , "visible": false },
-            { "data": "where_in_ms_to","title": "Where in MS To" , "visible": false },
+            { "data": "name", "title": "Name", "width": "5%" },
+            { "data": "where_in_ms_from", "title": "Where in MS From", "visible": false },
+            { "data": "where_in_ms_to", "title": "Where in MS To", "visible": false },
             {
                 "data": "where",
                 "title": "Where in MS",
@@ -208,17 +233,18 @@ function init_layouts_table()
                     let toText = row.where_in_ms_to;
 
                     //if(fromIndex)
-                        fromText = '<a  onclick="goToCanvasByLabel(\''+row.where_in_ms_from+'\')">'+row.where_in_ms_from+'</a>';
+                    fromText = '<b><a  onclick="goToCanvasByLabel(\'' + row.where_in_ms_from + '\')">' + row.where_in_ms_from + '</a></b>';
 
                     //if(toIndex)
-                        toText = '<a  onclick="goToCanvasByLabel(\''+row.where_in_ms_to+'\')">'+row.where_in_ms_to+'</a>';
+                    toText = '<b><a  onclick="goToCanvasByLabel(\'' + row.where_in_ms_to + '\')">' + row.where_in_ms_to + '</a></b>';
 
-                    if(row.where_in_ms_from == row.where_in_ms_to || row.where_in_ms_to == '-')
+                    if (row.where_in_ms_from == row.where_in_ms_to || row.where_in_ms_to == '-')
                         return fromText;
-                    return fromText +' - '+ toText;
-                }
+                    return fromText + ' - ' + toText;
+                },
+                "width": "10%"
             },
-            { "data": "how_many_columns","title": "How Many Columns" },
+            { "data": "how_many_columns", "title": "How Many Columns", "width": "10%" },
             { "data": "lines_per_page_minimum", "title": "Lines per Page (min)", "visible": false },
             { "data": "lines_per_page_maximum", "title": "Lines per Page (max)", "visible": false },
             {
@@ -230,7 +256,8 @@ function init_layouts_table()
                     } else {
                         return row.lines_per_page_minimum + " - " + row.lines_per_page_maximum;
                     }
-                }
+                },
+                "width": "10%"
             },
             { "data": "written_space_height_max", "title": "Written space height (max)", "visible": false },
             { "data": "written_space_width_max", "title": "Written space width (max)", "visible": false },
@@ -238,23 +265,24 @@ function init_layouts_table()
                 "data": "written_space",
                 "title": "Writtern Space max. HxW",
                 "render": function (data, type, row, meta) {
-                return row.written_space_height_max + " mm x " + row.written_space_width_max+" mm";
-                }
+                    return row.written_space_height_max + " mm x " + row.written_space_width_max + " mm";
+                }, 
+                "width": "10%"
             },
-            { "data": "ruling_method", "title": "Ruling method" },
-            { "data": "distance_between_horizontal_ruling", "title": "Distance between horizontal ruling" },
-            { "data": "distance_between_vertical_ruling", "title": "Distance between vertical ruling" },
+            { "data": "ruling_method", "title": "Ruling method", "width": "10%" },
+            { "data": "distance_between_horizontal_ruling", "title": "Distance between horizontal ruling", "width": "5%" },
+            { "data": "distance_between_vertical_ruling", "title": "Distance between vertical ruling", "width": "5%" },
 
-            { "data": "written_above_the_top_line", "title": "Written above the top line" },
-            { "data": "pricking", "title": "Pricking" },
-            { "data": "comments", "title": "Comments" },
+            { "data": "written_above_the_top_line", "title": "Written above the top line", "width": "10%" },
+            { "data": "pricking", "title": "Pricking", "width": "5%" },
+            { "data": "comments", "title": "Comments", "width": "15%" },
             { "data": "authors", "title": "Authors", "visible": false },
             { "data": "data_contributor", "title": "Data contributor", "visible": false },
         ],
         "order": [[1, 'asc']], // Sort by the 'name' column in ascending order
-        "initComplete": function() {
-            displayUniqueAuthorsAndContributors(layouts_table,"#layouts");
-            displayUniqueLayouts(layouts_table,"#layouts");
+        "initComplete": function () {
+            displayUniqueAuthorsAndContributors(layouts_table, "#layouts");
+            displayUniqueLayouts(layouts_table, "#layouts");
         }
     });
 }
@@ -264,7 +292,7 @@ function displayUniqueLayouts(dataTable, targetSelector) {
     var uniqueLayouts = {};
 
     // Iterate over table data to gather unique graph_img and name pairs
-    tableData.each(function(row) {
+    tableData.each(function (row) {
         var key = row.name;
         if (!(key in uniqueLayouts)) {
             uniqueLayouts[key] = row;
@@ -279,7 +307,7 @@ function displayUniqueLayouts(dataTable, targetSelector) {
         if (uniqueLayouts.hasOwnProperty(key)) {
             var layout = uniqueLayouts[key];
             var layoutDiv = $('<div class="layout">');
-            var img = $('<img>').attr('src', pageRoot+'/media/'+layout.graph_img).attr('alt', layout.name).css('max-width', '200px');
+            var img = $('<img>').attr('src', pageRoot + '/media/' + layout.graph_img).attr('alt', layout.name).css('max-width', '200px');
             var name = $('<p>').text(layout.name).css('text-align', 'center');
 
             layoutDiv.append(img, name);
@@ -293,20 +321,20 @@ function displayUniqueLayouts(dataTable, targetSelector) {
 
 // MUSIC NOTATNION
 var music_table;
-function init_music_table()
-{
+function init_music_table() {
     music_table = $('#music_notation').DataTable({
         "ajax": {
-            "url": pageRoot+'/music_notation_info/?ms=' + manuscriptId,
+            "url": pageRoot + '/music_notation_info/?ms=' + manuscriptId,
             "dataSrc": function (data) {
                 return data.data;
             }
         },
+        "bAutoWidth": false, 
         "columns": [
-            { "data": "music_notation_name", "title": "Music Notation Name" },
-            { "data": "sequence_in_ms", "title": "Sequence in MS" },
-            { "data": "where_in_ms_from", "title": "Where in MS From" , "visible": false },
-            { "data": "where_in_ms_to","title": "Where in MS To" , "visible": false },
+            { "data": "music_notation_name", "title": "Music Notation Name", "width": "13%" },
+            { "data": "sequence_in_ms", "title": "Sequence in MS", "width": "5%" },
+            { "data": "where_in_ms_from", "title": "Where in MS From", "visible": false },
+            { "data": "where_in_ms_to", "title": "Where in MS To", "visible": false },
             {
                 "data": "where",
                 "title": "Where in MS",
@@ -318,27 +346,27 @@ function init_music_table()
                     let toText = row.where_in_ms_to;
 
                     //if(fromIndex)
-                        fromText = '<a  onclick="goToCanvasByLabel(\''+row.where_in_ms_from+'\')">'+row.where_in_ms_from+'</a>';
+                    fromText = '<b><a  onclick="goToCanvasByLabel(\'' + row.where_in_ms_from + '\')">' + row.where_in_ms_from + '</a></b>';
 
                     //if(toIndex)
-                        toText = '<a  onclick="goToCanvasByLabel(\''+row.where_in_ms_to+'\')">'+row.where_in_ms_to+'</a>';
+                    toText = '<b><a  onclick="goToCanvasByLabel(\'' + row.where_in_ms_to + '\')">' + row.where_in_ms_to + '</a></b>';
 
-                    if(row.where_in_ms_from == row.where_in_ms_to || row.where_in_ms_to == '-')
+                    if (row.where_in_ms_from == row.where_in_ms_to || row.where_in_ms_to == '-')
                         return fromText;
-                    return fromText +' - '+ toText;
-                }
+                    return fromText + ' - ' + toText;
+                }, "width": "12%"
             },
-            { "data": "dating", "title": "Dating" },
-            { "data": "original", "title": "Original" },
-            { "data": "on_lines", "title": "On Lines" },
-            { "data": "music_custos", "title": "Music Custos" },
-            { "data": "number_of_lines", "title": "Number of Lines" },
-            { "data": "comment", "title": "Comment" },
+            { "data": "dating", "title": "Dating", "width": "15%" },
+            { "data": "original", "title": "Original", "width": "5%" },
+            { "data": "on_lines", "title": "On Lines", "width": "5%" },
+            { "data": "music_custos", "title": "Music Custos", "width": "5%" },
+            { "data": "number_of_lines", "title": "Number of Lines", "width": "5%" },
+            { "data": "comment", "title": "Comment", "width": "40%" },
             { "data": "authors", "title": "Authors", "visible": false },
             { "data": "data_contributor", "title": "Data contributor", "visible": false },
         ],
-        "initComplete": function() {
-            displayUniqueAuthorsAndContributors(music_table,"#music_notation");
+        "initComplete": function () {
+            displayUniqueAuthorsAndContributors(music_table, "#music_notation");
         }
     });
 }
@@ -346,31 +374,29 @@ function init_music_table()
 
 var content_table
 
-function init_content_table()
-{
+function init_content_table() {
     content_table = $('#content').DataTable({
         "ajax": {
-            "url": pageRoot+"/api/content/?format=datatables", // Add your URL here
+            "url": pageRoot + "/api/content/?format=datatables", // Add your URL here
             "dataSrc": function (data) {
-                var processedData=[]
+                var processedData = []
 
-                for(var c in data.data)
-                {
+                for (var c in data.data) {
                     processedData[c] = {}
-                    for(var f in data.data[c])
-                    {
-                        processedData[c][f] = getPrintableValues(f,data.data[c][f]).value;
+                    for (var f in data.data[c]) {
+                        processedData[c][f] = getPrintableValues(f, data.data[c][f]).value;
                     }
                 }
-                
+
                 return processedData;
             }
         },
         "processing": false,
         "serverSide": true,
-        "lengthMenu": [ [10, 25, 50, 100, -1], [10, 25, 50, 100, "All"] ],
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
         "pagingType": "full_numbers",
         "pageLength": 10,
+        "bAutoWidth": false, 
         "columns": [
             { "data": "manuscript", "title": "Manuscript ID", "visible": false },
             { "data": "manuscript_name", "title": "Manuscript", "visible": false },
@@ -387,54 +413,57 @@ function init_content_table()
                     let toText = row.where_in_ms_to;
 
                     //if(fromIndex)
-                        fromText = '<a  onclick="goToCanvasByLabel(\''+row.where_in_ms_from+'\')">'+row.where_in_ms_from+'</a>';
+                    fromText = '<b><a  onclick="goToCanvasByLabel(\'' + row.where_in_ms_from + '\')">' + row.where_in_ms_from + '</a></b>';
 
                     //if(toIndex)
-                        toText = '<a  onclick="goToCanvasByLabel(\''+row.where_in_ms_to+'\')">'+row.where_in_ms_to+'</a>';
+                    toText = '<b><a  onclick="goToCanvasByLabel(\'' + row.where_in_ms_to + '\')">' + row.where_in_ms_to + '</a></b>';
 
-                    if(row.where_in_ms_from == row.where_in_ms_to || row.where_in_ms_to == '-')
+                    if (row.where_in_ms_from == row.where_in_ms_to || row.where_in_ms_to == '-')
                         return fromText;
-                    return fromText +' - '+ toText;
-                }
+                    return fromText + ' - ' + toText;
+                },
+                "width": "10%" 
             },
-            { "data": "rite_name_from_ms", "title": "Rite name from MS" },
-            { "data": "subsection", "title": "Subsection" },
-            { "data": "function", "title": "Function / Genre" },
-            { "data": "subfunction", "title": "Subgenre" },
-            { "data": "biblical_reference", "title": "Biblical reference" },
-            { "data": "formula_standarized", "title": "Formula (standarized)" },
-            { 
-                "data": "formula_text", 
-                "title": "Formula (text from MS)" ,
+            { "data": "rite_name_from_ms", "title": "Rite name from MS", "width": "20%" },
+            { "data": "subsection", "title": "Subsection", "width": "20%"  },
+            { "data": "function", "title": "Function / Genre", "width": "10%"  },
+            { "data": "subfunction", "title": "Subgenre", "width": "10%"  },
+            { "data": "biblical_reference", "title": "Biblical reference", "width": "10%"  },
+            { "data": "formula_standarized", "title": "Formula (standarized)", "width": "40%"  },
+            {
+                "data": "formula_text",
+                "title": "Formula (text from MS)",
                 "render": function (data, type, row, meta) {
-                    if(row.music_notation != "-")
+                    if (row.music_notation != "-")
                         return row.formula_text + ' (♪)';
                     return row.formula_text;
-                },
+                }, 
+                "width": "40%"
             },
-            { 
-                "data": "similarity_levenshtein_percent", 
+            {
+                "data": "similarity_levenshtein_percent",
                 "title": "Similarity (levenshtein)",
                 "render": function (data, type, row, meta) {
                     return row.similarity_levenshtein_percent + "%";
                 },
-                "createdCell": function(td, cellData, rowData, row, col) {
-                    if(cellData == '-' || !cellData || cellData < 50)
+                "createdCell": function (td, cellData, rowData, row, col) {
+                    if (cellData == '-' || !cellData || cellData < 50)
                         $(td).css("color", "red");
-                    else if( cellData > 99.9)
+                    else if (cellData > 99.9)
                         $(td).css("color", "green");
                     else
                         $(td).css("color", "#a66b00");
                 },
+                "width": '60px'
             },
-            { "data": "similarity_by_user", "title": "Similarity (by user)" },
+            { "data": "similarity_by_user", "title": "Similarity (by user)", "width": "5%"  },
             { "data": "original_or_added", "title": "Original or Added", "visible": false },
-            { "data": "quire", "title": "Quire" },
+            { "data": "quire", "title": "Quire", "width": "5%"  },
 
-            { "data": "music_notation", "title": "Music Notation" , "visible": false },
-            { "data": "sequence_in_ms", "title": "Sequence in MS" , "visible": false },
+            { "data": "music_notation", "title": "Music Notation", "visible": false },
+            { "data": "sequence_in_ms", "title": "Sequence in MS", "visible": false },
             { "data": "original_or_added", "title": "Original or Added", "visible": false },
-            { "data": "proper_texts", "title": "Proper texts"},
+            { "data": "proper_texts", "title": "Proper texts", "width": "5%"  },
 
             { "data": "authors", "title": "Authors", "visible": false },
             { "data": "data_contributor", "title": "Data contributor", "visible": false },
@@ -444,41 +473,40 @@ function init_content_table()
             { "data": "sequence_in_ms", "order": "asc" },  // Sort by the "manuscript_name" column in ascending order
             { "data": "where_in_ms_from", "order": "asc" }      // Then sort by the "manuscript" column in descending order
         ],
-        "createdRow": function(row, data, dataIndex) {
+        "createdRow": function (row, data, dataIndex) {
             if (data.original_or_added == "ORIGINAL") {
                 $(row).addClass('medieval-row');
-            } else if (data.original_or_added == "ADDED")  {
+            } else if (data.original_or_added == "ADDED") {
                 $(row).addClass('non-medieval-row');
             }
         },
-        "initComplete": function(settings, json)  {
-            displayUniqueAuthorsAndContributors(content_table,"#content");
-            displaOriginalAddedLegend(content_table,"#content");
+        "initComplete": function (settings, json) {
+            displayUniqueAuthorsAndContributors(content_table, "#content");
+            displaOriginalAddedLegend(content_table, "#content");
 
             // Get column information from DataTable settings
             var columns = settings.aoColumns;
 
             // Column names to check for null values
-            var columnsToCheck = ["function", "subfunction", "biblical_reference", "subsection", "quire", "similarity_by_user",  "proper_texts", "formula_text"];
+            var columnsToCheck = ["function", "subfunction", "biblical_reference", "subsection", "quire", "similarity_by_user", "proper_texts", "formula_text"];
 
             // Get the DataTable instance
             var table = this;
 
             // Iterate over columns
-            columns.forEach(function(column, columnIndex) {
+            columns.forEach(function (column, columnIndex) {
                 // Check if the column name matches the ones to be checked
                 if (columnsToCheck.includes(column.data)) {
-                    var isVisible = json.data.some(function(row) {
-                        return !( row[column.data] == 'None' || row[column.data] == null );
+                    var isVisible = json.data.some(function (row) {
+                        return !(row[column.data] == 'None' || row[column.data] == null);
                     });
 
                     // Set column visibility based on null values
                     settings.oInstance.api().column(columnIndex).visible(isVisible);
                 }
-                else if(column.data == "similarity_levenshtein_percent")
-                {
-                    var isVisible = json.data.some(function(row) {
-                        return !( row[column.data] == 0 || row[column.data] == null );
+                else if (column.data == "similarity_levenshtein_percent") {
+                    var isVisible = json.data.some(function (row) {
+                        return !(row[column.data] == 0 || row[column.data] == null);
                     });
                     settings.oInstance.api().column(columnIndex).visible(isVisible);
                 }
@@ -492,20 +520,20 @@ function init_content_table()
 
 //Quires----------------------------------------------------------------
 var quires_table
-function init_quires_table()
-{
+function init_quires_table() {
     quires_table = $('#quires').DataTable({
         "ajax": {
-            "url": pageRoot+'/quires_info/?ms=' + manuscriptId,
+            "url": pageRoot + '/quires_info/?ms=' + manuscriptId,
             "dataSrc": function (data) {
                 return data.data;
             }
         },
         "processing": false,
         "serverSide": true,
-        "lengthMenu": [ [10, 25, 50, 100, -1], [10, 25, 50, 100, "All"] ],
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
         "pagingType": "full_numbers",
         "pageLength": 25,
+        "bAutoWidth": false, 
         "columns": [
             {
                 "data": "graph_img",
@@ -513,10 +541,11 @@ function init_quires_table()
                 "title": "Image",
                 "render": function (data, type, row, meta) {
                     return renderImg(data, type, row, meta);
-                }
+                }, 
+                "width": "20%"
             },
-            { "data": "type_of_the_quire", "title": "Quire type" },
-            { "data": "sequence_of_the_quire", "title": "Sequence in MS" },
+            { "data": "type_of_the_quire", "title": "Quire type", "width": "15%" },
+            { "data": "sequence_of_the_quire", "title": "Sequence in MS", "width": "10%" },
             { "data": "where_in_ms_from", "title": "Where in MS (from)", "visible": false },
             { "data": "where_in_ms_to", "title": "Where in MS (to)", "visible": false },
             {
@@ -530,39 +559,41 @@ function init_quires_table()
                     let toText = row.where_in_ms_to;
 
                     //if(fromIndex)
-                        fromText = '<a  onclick="goToCanvasByLabel(\''+row.where_in_ms_from+'\')">'+row.where_in_ms_from+'</a>';
+                    fromText = '<b><a  onclick="goToCanvasByLabel(\'' + row.where_in_ms_from + '\')">' + row.where_in_ms_from + '</a></b>';
 
                     //if(toIndex)
-                        toText = '<a  onclick="goToCanvasByLabel(\''+row.where_in_ms_to+'\')">'+row.where_in_ms_to+'</a>';
+                    toText = '<b><a  onclick="goToCanvasByLabel(\'' + row.where_in_ms_to + '\')">' + row.where_in_ms_to + '</a></b>';
 
-                    if(row.where_in_ms_from == row.where_in_ms_to || row.where_in_ms_to == '-')
+                    if (row.where_in_ms_from == row.where_in_ms_to || row.where_in_ms_to == '-')
                         return fromText;
-                    return fromText +' - '+ toText;
-                }
+                    return fromText + ' - ' + toText;
+                },
+                "width": "15%"
             },
-            { "data": "comment", "title": "Comment" },
+            { "data": "comment", "title": "Comment", "width": "40%" },
             { "data": "authors", "title": "Authors", "visible": false },
-            { "data": "data_contributor", "title": "Data contributor" , "visible": false }
+            { "data": "data_contributor", "title": "Data contributor", "visible": false }
         ],
         "order": [
             { "data": "sequence_of_the_quire", "order": "asc" },  // Sort by the "manuscript_name" column in ascending order
             { "data": "where_in_ms_from", "order": "asc" }      // Then sort by the "manuscript" column in descending order
         ],
-        "initComplete": function() {
-            displayUniqueAuthorsAndContributors(quires_table,"#quires");
+        "initComplete": function () {
+            displayUniqueAuthorsAndContributors(quires_table, "#quires");
         }
     });
 }
 
 //Decoration----------------------------------------------------------------
-var decoration_table
 
-function init_decoration_table()
-{ 
-    var decoration_groupColumn = 0;
+/*
+var decoration_table;
+
+function init_decoration_table() {
+    var decoration_groupColumn = 2;
     decoration_table = $('#decoration').DataTable({
         "ajax": {
-            "url": pageRoot+'/decoration_info/?ms=' + manuscriptId,
+            "url": pageRoot + '/decoration_info/?ms=' + manuscriptId,
             "dataSrc": function (data) {
                 return data.data;
             }
@@ -571,15 +602,273 @@ function init_decoration_table()
             { "data": "id", "title": "id"  , "visible": false },
             { "data": "decoration_type", "title": "Decoration type"  , "visible": false },
             { "data": "decoration_subtype", "title": "Decoration subtype" },
-            { "data": "size_height", "title": "Size - height" , "visible": false },
-            { "data": "size_width", "title": "Size - width" , "visible": false },
+            { "data": "size_characteristic", "title": "Size characteristic", "visible": false },
+            { "data": "size_height_min", "title": "Size - height min", "visible": false },
+            { "data": "size_height_max", "title": "Size - height max", "visible": false },
+            { "data": "size_width_min", "title": "Size - width min", "visible": false },
+            { "data": "size_width_max", "title": "Size - width max", "visible": false },
+            { "data": "size", "title": "Size",
+                "render": function(data, type, row, meta) {
+                    let size_characteristic = row.size_characteristic;
+                    let width='';
+                    let height='';
+                    if (row.size_width_min != '-' && row.size_width_max != '-' && row.size_width_min != row.size_width_max)
+                        width = row.size_width_min + " mm - " + row.size_width_max + " mm";
+                    else if (row.size_width_min != '-' && row.size_width_max != '-' ) // min == max
+                        width = row.size_width_min + " mm ";
+                    else if (row.size_width_min != '-')
+                        width = row.size_width_min  + " mm"
+                    else if (row.size_width_max != '-')
+                        width = row.size_width_max + " mm"
+
+                    if (row.size_height_min != '-' && row.size_height_max != '-' && row.size_height_min != row.size_height_max)
+                        height = row.size_height_min + " mm - " + row.size_height_max + " mm";
+                    else if (row.size_height_min != '-' && row.size_height_max != '-' ) // min == max
+                        height = row.size_height_min + " mm ";
+                    else if (row.size_height_min != '-')
+                        height = row.size_height_min  + " mm"
+                    else if (row.size_height_max != '-')
+                        height = row.size_height_max + " mm"
+
+                    let dimensions = [width,height].join(" x ");
+                    if(dimensions<4)
+                        dimensions = '';
+                    
+                    return size_characteristic.toLowerCase()+' '+dimensions;
+            }},
+            { "data": "where_in_ms_from", "title": "Where in MS (from)", "visible": false },
+            { "data": "where_in_ms_to", "title": "Where in MS (to)", "visible": false },
             {
-                "data": "size",
-                "title": "Size HxW",
+                "data": "where",
+                "title": "Where in MS",
                 "render": function (data, type, row, meta) {
-                    if(row.size_height != '-' || row.size_height != '-')
-                        return row.size_height + " mm x " + row.size_width+" mm";
-                    return '-';
+                    //let fromIndex = findCanvasIndexByLabel(row.where_in_ms_from);
+                    //let toIndex = findCanvasIndexByLabel(row.where_in_ms_to);
+
+                    let fromText = row.where_in_ms_from;
+                    let toText = row.where_in_ms_to;
+
+                    //if(fromIndex)
+                    fromText = '<b><a  onclick="goToCanvasByLabel(\'' + row.where_in_ms_from + '\')">' + row.where_in_ms_from + '</a></b>';
+
+                    //if(toIndex)
+                    toText = '<b><a  onclick="goToCanvasByLabel(\'' + row.where_in_ms_to + '\')">' + row.where_in_ms_to + '</a></b>';
+
+                    if (row.where_in_ms_from == row.where_in_ms_to || row.where_in_ms_to == '-')
+                        return fromText;
+                    return fromText + ' - ' + toText;
+                }
+            },
+            { "data": "content", "title": "content", "visible": false },
+            { "data": "calendar", "title": "calendar", "visible": false },
+            { "data": "rite_name_standarized", "title": "rite_name_standarized", "visible": false },
+            {
+                "data": "decorated_content",
+                "title": "Decorated content",
+                "render": function (data, type, row, meta) {
+                    //let fromIndex = findCanvasIndexByLabel(row.where_in_ms_from);
+                    //let toIndex = findCanvasIndexByLabel(row.where_in_ms_to);
+
+                    let content = row.content;
+                    let calendar = row.calendar;
+                    let rite_name_standarized = row.rite_name_standarized;
+
+                    if(content.length<2)
+                        content = '';
+                    if(calendar.length<2)
+                        calendar = '';
+                    if(rite_name_standarized.length<2)
+                        rite_name_standarized = '';
+
+
+
+                    return content+' '+calendar+' '+rite_name_standarized;
+                }
+            },
+
+            { "data": "location_on_the_page", "title": "Location on the page" },
+            { "data": "original_or_added", "title": "Original or added", "visible": false },
+            { "data": "monochrome_or_colour", "title": "Monochrome or colour", "visible": false },
+            //{ "data": "characteristic", "title": "Decoration characteristic" },
+            { 
+                "data": "decoration_subjects", 
+                "title": "Subjects",
+                "render": function(data, type, row) {
+                    return Array.isArray(data) ? data.join(", ") : data;
+                }
+            },
+            { 
+                "data": "decoration_colours", 
+                "title": "Colours",
+                "render": function(data, type, row) {
+                    return Array.isArray(data) ? data.join(", ") : data;
+                }
+                , "visible": false
+            },
+            { 
+                "data": "decoration_characteristics", 
+                "title": "Characteristics",
+                "render": function(data, type, row) {
+                    return Array.isArray(data) ? data.join(", ") : data;
+                }
+            },
+            {
+                "data": "colour",
+                "title": "Colour",
+                "render": function (data, type, row, meta) {
+
+                    let monochrome_or_colour = row.monochrome_or_colour;
+                    let colours_list = row.decoration_colours;
+
+                    let html_text = '';
+
+                    if(monochrome_or_colour=='C')
+                        html_text = '<b>colour </b>'
+                    else if (monochrome_or_colour=='C')
+                        html_text = '<b>monochrome </b>'
+
+                    for(var c=0; c<colours_list.length; ++c)
+                    {
+                        var color_box = '<div style="border: 1px solid black; width: 1.1em; height:1.1em; display: inline-block; margin-right:0.5em;  margin-left: 1em; text-align: middle; background-color: '+colours_list[c]+';"></div>'
+                        html_text+=color_box
+                        html_text+="<span>"+colours_list[c]+"<span>"
+                    }
+
+                    return html_text;
+                }
+            },
+
+            { "data": "technique", "title": "Technique" },
+            { "data": "ornamented_text", "title": "Ornamented text" },
+            { "data": "date_of_the_addition", "title": "Addition Date" },
+            //{ "data": "comments", "title": "Comments" },
+            { "data": "authors", "title": "Authors", "visible": false },
+            { "data": "data_contributor", "title": "Data contributor", "visible": false },
+            { "data": "entry_date", "title": "Entry date", "visible": false },
+
+        ],
+        "order": [
+            [decoration_groupColumn, 'asc'],
+            { "data": "where_in_ms_from", "order": "asc" }      // Then sort by the "manuscript" column in descending order
+        ],
+        "createdRow": function (row, data, dataIndex) {
+            if (data.original_or_added == "ORIGINAL") {
+                $(row).addClass('medieval-row');
+            } else if (data.original_or_added == "ADDED") {
+                $(row).addClass('non-medieval-row');
+            }
+        },
+        "initComplete": function() {
+            displayDebate(decoration_table,"#decoration");
+            displayComments(decoration_table,"#decoration");
+            displaOriginalAddedLegend(decoration_table,"#decoration");
+            displayEntryDate(decoration_table,"#decoration");
+            displayUniqueAuthorsAndContributors(decoration_table,"#decoration");
+        },
+        "drawCallback": function (settings) {
+            var api = this.api();
+            var rows = api.rows({ page: 'current' }).nodes();
+            var last = null;
+
+            api.column(decoration_groupColumn, { page: 'current' })
+                .data()
+                .each(function (group, i) {
+                    if (last !== group) {
+                        $(rows)
+                            .eq(i)
+                            .before(
+                                '<tr class="table_group"><td colspan="12">' +
+                                group +
+                                '</td></tr>'
+                            );
+
+                        last = group;
+                    }
+                });
+        }
+    });
+}
+*/
+//TODO Dla pozostałych tabel
+
+var initials_table;
+
+var decoration_tables_initials = {
+    table: null,
+    tableSelector: '#initials',
+    typeQuery: 'initials',
+    ornamentedTextVisible: true,
+    displaySubsections: true,
+}
+
+var decoration_tables_miniatures = {
+    table: null,
+    tableSelector: '#miniatures',
+    typeQuery: 'miniatures',
+    ornamentedTextVisible: false,
+    displaySubsections: false,
+}
+
+var decoration_tables_borders_others = {
+    table: null,
+    tableSelector: '#borders_others',
+    typeQuery: 'Borders / Others',
+    ornamentedTextVisible: false,
+    displaySubsections: true,
+}
+
+
+function init_initials_table() {
+    init_decoration_table(decoration_tables_initials);
+}
+
+function init_borders_others_table(){
+    init_decoration_table(decoration_tables_borders_others);
+}
+
+function init_miniatures_table(){
+    init_decoration_table(decoration_tables_miniatures);
+}
+
+
+
+function init_decoration_table(table_info) {
+    var decoration_groupColumn = 2;
+    table_info.table = $(table_info.tableSelector).DataTable({
+        "ajax": {
+            "url": pageRoot + '/decoration_info/?ms=' + manuscriptId+'&decoration_type='+table_info.typeQuery,
+            "dataSrc": function (data) {
+                return data.data;
+            }
+        },
+        "bAutoWidth": false, 
+        "columns": [
+            { "data": "id", "title": "id"  , "visible": false },
+            { "data": "decoration_type", "title": "Decoration type"  , "visible": false },
+            { "data": "decoration_subtype", "title": "Decoration subtype" , "visible": false },
+            { "data": "ornamented_text", "title": "Ornamented text", "width": '15%', "visible": table_info.ornamentedTextVisible}, 
+            { "data": "content", "title": "content", "visible": false },
+            { "data": "calendar", "title": "calendar", "visible": false },
+            { "data": "rite_name_standarized", "title": "rite_name_standarized", "visible": false },
+            {
+                "data": "decorated_content",
+                "title": "Decorated content",
+                "render": function (data, type, row, meta) {
+                    //let fromIndex = findCanvasIndexByLabel(row.where_in_ms_from);
+                    //let toIndex = findCanvasIndexByLabel(row.where_in_ms_to);
+
+                    let content = row.content;
+                    let calendar = row.calendar;
+                    let rite_name_standarized = row.rite_name_standarized;
+
+                    if(content.length<2)
+                        content = '';
+                    if(calendar.length<2)
+                        calendar = '';
+                    if(rite_name_standarized.length<2)
+                        rite_name_standarized = '';
+
+                    return content+' '+calendar+' '+rite_name_standarized;
                 }
             },
             { "data": "where_in_ms_from", "title": "Where in MS (from)", "visible": false },
@@ -595,57 +884,218 @@ function init_decoration_table()
                     let toText = row.where_in_ms_to;
 
                     //if(fromIndex)
-                        fromText = '<a  onclick="goToCanvasByLabel(\''+row.where_in_ms_from+'\')">'+row.where_in_ms_from+'</a>';
+                    fromText = '<b><a  onclick="goToCanvasByLabel(\'' + row.where_in_ms_from + '\')">' + row.where_in_ms_from + '</a></b>';
 
                     //if(toIndex)
-                        toText = '<a  onclick="goToCanvasByLabel(\''+row.where_in_ms_to+'\')">'+row.where_in_ms_to+'</a>';
+                    toText = '<b><a  onclick="goToCanvasByLabel(\'' + row.where_in_ms_to + '\')">' + row.where_in_ms_to + '</a></b>';
 
-                    if(row.where_in_ms_from == row.where_in_ms_to || row.where_in_ms_to == '-')
+                    if (row.where_in_ms_from == row.where_in_ms_to || row.where_in_ms_to == '-')
                         return fromText;
-                    return fromText +' - '+ toText;
-                }
+                    return fromText + ' - ' + toText;
+                },
+                "width": '10%'
             },
-            { "data": "location_characteristic", "title": "Location Characteristic" },
-            { "data": "original_or_added", "title": "Original or added" },
-            { "data": "monochrome_or_colour", "title": "Monochrome or colour" },
-            { "data": "characteristic", "title": "Decoration characteristic" },
-            { "data": "technique", "title": "Technique" },
-            { "data": "initials", "title": "Initials" },
+            { "data": "location_on_the_page", "title": "Location on the page" },
+            { "data": "size_characteristic", "title": "Size characteristic", "visible": false },
+            { "data": "size_height_min", "title": "Size - height min", "visible": false },
+            { "data": "size_height_max", "title": "Size - height max", "visible": false },
+            { "data": "size_width_min", "title": "Size - width min", "visible": false },
+            { "data": "size_width_max", "title": "Size - width max", "visible": false },
+            { "data": "size", "title": "Size",
+                "render": function(data, type, row, meta) {
+                    let size_characteristic = row.size_characteristic;
+                    let width='';
+                    let height='';
+                    if (row.size_width_min != '-' && row.size_width_max != '-' && row.size_width_min != row.size_width_max)
+                        width = row.size_width_min + " mm - " + row.size_width_max + " mm";
+                    else if (row.size_width_min != '-' && row.size_width_max != '-' ) // min == max
+                        width = row.size_width_min + " mm ";
+                    else if (row.size_width_min != '-')
+                        width = row.size_width_min  + " mm"
+                    else if (row.size_width_max != '-')
+                        width = row.size_width_max + " mm"
+
+                    if (row.size_height_min != '-' && row.size_height_max != '-' && row.size_height_min != row.size_height_max)
+                        height = row.size_height_min + " mm - " + row.size_height_max + " mm";
+                    else if (row.size_height_min != '-' && row.size_height_max != '-' ) // min == max
+                        height = row.size_height_min + " mm ";
+                    else if (row.size_height_min != '-')
+                        height = row.size_height_min  + " mm"
+                    else if (row.size_height_max != '-')
+                        height = row.size_height_max + " mm"
+
+                    let dimensions = [width,height].join("<br /> x <br />");
+                    if(dimensions.length<16)
+                        dimensions = '';
+                    
+                    return size_characteristic.toLowerCase()+'<br />'+dimensions;
+                },
+                "className": "text-center",
+                "width": '12%'
+            },
+            { "data": "original_or_added", "title": "Original or added", "visible": false },
+            { "data": "monochrome_or_colour", "title": "Monochrome or colour", "visible": false },
+            /*{ "data": "characteristic", "title": "Decoration characteristic" },*/
+            { 
+                "data": "decoration_subjects", 
+                "title": "Subjects",
+                "render": function(data, type, row) {
+                    return Array.isArray(data) ? data.join(", ") : data;
+                },
+                "width": '10%'
+            },
+            { 
+                "data": "decoration_colours", 
+                "title": "Colours",
+                "render": function(data, type, row) {
+                    return Array.isArray(data) ? data.join(", ") : data;
+                }
+                , "visible": false
+            },
+            { 
+                "data": "decoration_characteristics", 
+                "title": "Characteristics",
+                "render": function(data, type, row) {
+                    return Array.isArray(data) ? data.join(", ") : data;
+                },
+                "width": '15%'
+            },
+            {
+                "data": "colour",
+                "title": "Colour",
+                "render": function (data, type, row, meta) {
+
+                    let monochrome_or_colour = row.monochrome_or_colour;
+                    let colours_list = row.decoration_colours;
+
+                    let html_text = '';
+
+                    if(monochrome_or_colour=='C')
+                        html_text = '<b>colour </b>'
+                    else if (monochrome_or_colour=='C')
+                        html_text = '<b>monochrome </b>'
+
+                    for(var c=0; c<colours_list.length; ++c)
+                    {
+                        var color_box = '<br /><div style="border: 1px solid black; width: 1.1em; height:1.1em; display: inline-block; margin-right:0.5em;  margin-left: 1em; text-align: middle; background-color: '+colours_list[c]+';"></div>'
+                        html_text+=color_box
+                        html_text+="<span>"+colours_list[c]+"<span>"
+                    }
+
+                    return html_text;
+                },
+                "width": '10%'
+            },
+
+            { "data": "technique", "title": "Technique" , "width": '15%'},
+            { "data": "date_of_the_addition", "title": "Addition Date" },
             //{ "data": "comments", "title": "Comments" },
-            { "data": "authors", "title": "Authors" , "visible": false },
-            { "data": "data_contributor", "title": "Data contributor" , "visible": false },
+            { "data": "authors", "title": "Authors", "visible": false },
+            { "data": "data_contributor", "title": "Data contributor", "visible": false },
+            { "data": "entry_date", "title": "Entry date", "visible": false },
+
         ],
         "order": [
-            [ decoration_groupColumn, 'asc' ],
+            [decoration_groupColumn, 'asc'],
             { "data": "where_in_ms_from", "order": "asc" }      // Then sort by the "manuscript" column in descending order
         ],
-        "initComplete": function() {
-            displayDebate(decoration_table,"#decoration");
-            displayUniqueAuthorsAndContributors(decoration_table,"#decoration");
+        "createdRow": function (row, data, dataIndex) {
+            if (data.original_or_added == "ORIGINAL") {
+                $(row).addClass('medieval-row');
+            } else if (data.original_or_added == "ADDED") {
+                $(row).addClass('non-medieval-row');
+            }
+        },
+        "initComplete": function (settings, json) {
+            displayDebate(table_info.table, table_info.tableSelector);
+            displayComments(table_info.table, table_info.tableSelector);
+            displaOriginalAddedLegend(table_info.table, table_info.tableSelector);
+            displayEntryDate(table_info.table, table_info.tableSelector);
+            displayUniqueAuthorsAndContributors(table_info.table, table_info.tableSelector);
+
+            // Get column information from DataTable settings
+            var columns = settings.aoColumns;
+
+            // Column names to check for null values
+            var columnsToCheck = ["decorated_content","location_on_the_page","decoration_subjects","technique","date_of_the_addition"];
+
+            // Get the DataTable instance
+            var table = this;
+
+            // Iterate over columns
+            columns.forEach(function (column, columnIndex) {
+                // Check if the column name matches the ones to be checked
+                if (columnsToCheck.includes(column.data)) {
+                    var isVisible = json.data.some(function (row) {
+                        return !(row[column.data] == 'None' || row[column.data] == null || row[column.data] == '' || row[column.data] == "-" );
+                    });
+
+                    // Set column visibility based on null values
+                    settings.oInstance.api().column(columnIndex).visible(isVisible);
+                }
+            });
+
+
         },
         "drawCallback": function (settings) {
             var api = this.api();
             var rows = api.rows({ page: 'current' }).nodes();
             var last = null;
-     
-            api.column(decoration_groupColumn, { page: 'current' })
-                .data()
-                .each(function (group, i) {
-                    if (last !== group) {
-                        $(rows)
-                            .eq(i)
-                            .before(
-                                '<tr class="table_group"><td colspan="9">' +
+
+            if(table_info.displaySubsections)
+            {
+
+                api.column(decoration_groupColumn, { page: 'current' })
+                    .data()
+                    .each(function (group, i) {
+                        if (last !== group) {
+                            $(rows)
+                                .eq(i)
+                                .before(
+                                    '<tr class="table_group"><td colspan="12">' +
                                     group +
                                     '</td></tr>'
-                            );
-     
-                        last = group;
-                    }
-                });
+                                );
+
+                            last = group;
+                        }
+                    });
+            
+            }
         }
     });
 }
+//init_miniatures_table
+//init_borders_others_table
+/*
+var origins_table;
+
+function init_origins_table() {
+    origins_table = $('#origins').DataTable({
+        "ajax": {
+            "url": pageRoot + '/origins_info/?ms=' + manuscriptId,
+            "dataSrc": function (data) {
+                return data.data;
+            }
+        },
+        "bAutoWidth": false, 
+        "columns": [
+            { "data": "id", "title": "id"  , "visible": false },
+            { "data": "origins_date", "title": "Origins date", "width": "10%" },
+            { "data": "origins_place", "title": "Origins place", "width": "30%"  },
+            { "data": "origins_comment", "title": "Origins comment", "width": "60%"  },
+            { "data": "provenance_comments", "title": "Provenance comments", "visible": false },
+            { "data": "authors", "title": "Authors", "visible": false },
+            { "data": "data_contributor", "title": "Data contributor", "visible": false }
+        ],
+        "initComplete": function() {
+            displayDebate(origins_table,"#origins");
+            displayUniqueAuthorsAndContributors(origins_table,"#origins");
+        }
+    });
+}
+
+*/
 
 //Condition----------------------------------------------------------------
 /*
@@ -659,7 +1109,7 @@ var condition_table = $('#condition').DataTable({
     "columns": [
         { "data": "damage", "title": "Damage" },
         { "data": "parchment_shrinkage", "title": "Parchment shrinkage" },
-        { "data": "illegible_text_fragments", "title": "Illegible text fragments" },
+        { "data": "illegible_text", "title": "illegible_text" },
         { "data": "ink_corrosion", "title": "Ink corrosion" },
         { "data": "copper_corrosion", "title": "Copper corrosion" },
         { "data": "powdering_or_cracking_paint_layer", "title": "Powdering or cracking paint layer" },
@@ -678,20 +1128,20 @@ var condition_table = $('#condition').DataTable({
 //Origins----------------------------------------------------------------
 var origins_table;
 
-function init_origins_table()
-{
+function init_origins_table() {
     origins_table = $('#origins').DataTable({
         "ajax": {
-            "url": pageRoot+'/origins_info/?ms=' + manuscriptId,
+            "url": pageRoot + '/origins_info/?ms=' + manuscriptId,
             "dataSrc": function (data) {
                 return data.data;
             }
         },
+        "bAutoWidth": false, 
         "columns": [
             { "data": "id", "title": "id"  , "visible": false },
-            { "data": "origins_date", "title": "Origins date" },
-            { "data": "origins_place", "title": "Origins place" },
-            { "data": "origins_comment", "title": "Origins comment" },
+            { "data": "origins_date", "title": "Origins date", "width": "10%" },
+            { "data": "origins_place", "title": "Origins place", "width": "30%"  },
+            { "data": "origins_comment", "title": "Origins comment", "width": "60%"  },
             { "data": "provenance_comments", "title": "Provenance comments", "visible": false },
             { "data": "authors", "title": "Authors", "visible": false },
             { "data": "data_contributor", "title": "Data contributor", "visible": false }
@@ -702,6 +1152,8 @@ function init_origins_table()
         }
     });
 }
+
+
 
 //Binding----------------------------------------------------------------
 /*
@@ -717,7 +1169,7 @@ var music_table = $('#binding').DataTable({
         { "data": "max_width", "title": "Width (max)" },
         { "data": "block_max", "title": "Block (max)" },
         { "data": "date", "title": "Date" },
-        { "data": "place_of_origins", "title": "Place of origins" },
+        { "data": "place_of_origin", "title": "Place of origin" },
         { "data": "type_of_binding", "title": "Type of binding" },
         { "data": "style_of_binding", "title": "Style of binding" },
         { "data": "decoration_comment", "title": "Decoration comment" },
@@ -732,13 +1184,12 @@ var music_table = $('#binding').DataTable({
 
 //Binding Materials----------------------------------------------------------------
 var binding_materials_table
-function init_binding_materials_table()
-{
+function init_binding_materials_table() {
     binding_materials_table = $('#binding_materials').DataTable({
         "ajax": {
-            "url": pageRoot+'/binding_materials_info/?ms=' + manuscriptId,
+            "url": pageRoot + '/binding_materials_info/?ms=' + manuscriptId,
             "dataSrc": function (data) {
-                return data.data; 
+                return data.data;
             }
         },
         "columns": [
@@ -749,29 +1200,26 @@ function init_binding_materials_table()
 
 //Hands----------------------------------------------------------------
 var main_hands;
-function init_main_hands()
-{
+function init_main_hands() {
     main_hands = $('#main_hands').DataTable({
         "ajax": {
             //"url": pageRoot+"/api/hands/?format=datatables", // Add your URL here
             "url": pageRoot+"/hands_info/",
             "type": 'GET',
-            "data": function(d) {
+            "data": function (d) {
                 d.is_main_text = true;
                 d.ms = manuscriptId;
             },
             "dataSrc": function (data) {
-                var processedData=[]
+                var processedData = []
 
-                for(var c in data.data)
-                {
+                for (var c in data.data) {
                     processedData[c] = {}
-                    for(var f in data.data[c])
-                    {
-                        processedData[c][f] = getPrintableValues(f,data.data[c][f]).value;
+                    for (var f in data.data[c]) {
+                        processedData[c][f] = getPrintableValues(f, data.data[c][f]).value;
                     }
                 }
-                
+
                 return processedData;
             }
         },
@@ -781,10 +1229,11 @@ function init_main_hands()
         "lengthMenu": [ [10, 25, 50, 100, -1], [10, 25, 50, 100, "All"] ],
         "pagingType": "full_numbers",
         "pageLength": 25,
+        "bAutoWidth": false, 
         "columns": [
-            { "data": "hand", "title": "hand" },
-            { "data": "script_name", "title": "script name" },
-            { "data": "sequence_in_ms", "title": "sequence in ms" },
+            { "data": "hand", "title": "hand", "width": "15%" },
+            { "data": "script_name", "title": "script name", "width": "15%" },
+            { "data": "sequence_in_ms", "title": "sequence in ms", "width": "15%" },
             { "data": "where_in_ms_from", "title": "Where in MS (from)", "visible": false },
             { "data": "where_in_ms_to", "title": "Where in MS (to)", "visible": false },
             {
@@ -798,27 +1247,28 @@ function init_main_hands()
                     let toText = row.where_in_ms_to;
 
                     //if(fromIndex)
-                        fromText = '<a  onclick="goToCanvasByLabel(\''+row.where_in_ms_from+'\')">'+row.where_in_ms_from+'</a>';
+                    fromText = '<b><a  onclick="goToCanvasByLabel(\'' + row.where_in_ms_from + '\')">' + row.where_in_ms_from + '</a></b>';
 
                     //if(toIndex)
-                        toText = '<a  onclick="goToCanvasByLabel(\''+row.where_in_ms_to+'\')">'+row.where_in_ms_to+'</a>';
+                    toText = '<b><a  onclick="goToCanvasByLabel(\'' + row.where_in_ms_to + '\')">' + row.where_in_ms_to + '</a></b>';
 
-                    if(row.where_in_ms_from == row.where_in_ms_to || row.where_in_ms_to == '-')
+                    if (row.where_in_ms_from == row.where_in_ms_to || row.where_in_ms_to == '-')
                         return fromText;
-                    return fromText +' - '+ toText;
-                }
+                    return fromText + ' - ' + toText;
+                }, 
+                "width": "15%"
             },
             { "data": "is_medieval", "title": "is medieval?", "visible": false },
-            { "data": "is_main_text", "name": "is_main_text", "title": "is main text?",  "visible": false },
-            { "data": "comment", "title": "comment" },
-            { "data": "authors", "title": "authors",  "visible": false },
-            { "data": "data_contributor", "title": "data contributor",  "visible": false },
+            { "data": "is_main_text", "name": "is_main_text", "title": "is main text?", "visible": false },
+            { "data": "comment", "title": "comment", "width": "40%" },
+            { "data": "authors", "title": "authors", "visible": false },
+            { "data": "data_contributor", "title": "data contributor", "visible": false },
         ],
         "order": [
             { "data": "sequence_in_ms", "order": "asc" },  // Sort by the "manuscript_name" column in ascending order
             { "data": "where_in_ms_from", "order": "asc" }      // Then sort by the "manuscript" column in descending order
         ],
-        "createdRow": function(row, data, dataIndex) {
+        "createdRow": function (row, data, dataIndex) {
             if (data.is_medieval == true || data.is_medieval == "true" || data.is_medieval == "yes") {
                 $(row).addClass('medieval-row');
             } else {
@@ -835,42 +1285,39 @@ function init_main_hands()
 }
 
 var additions_hands;
-function init_additions_hands()
-{
+function init_additions_hands() {
     additions_hands = $('#additions_hands').DataTable({
         "ajax": {
             //"url": pageRoot+"/api/hands/?format=datatables", // Add your URL here
             "url": pageRoot+"/hands_info/",
             "type": 'GET',
-            "data": function(d) {
+            "data": function (d) {
                 d.is_main_text = false;
                 d.ms = manuscriptId;
             },
             "dataSrc": function (data) {
-                var processedData=[]
+                var processedData = []
 
-                for(var c in data.data)
-                {
+                for (var c in data.data) {
                     processedData[c] = {}
-                    for(var f in data.data[c])
-                    {
-                        processedData[c][f] = getPrintableValues(f,data.data[c][f]).value;
+                    for (var f in data.data[c]) {
+                        processedData[c][f] = getPrintableValues(f, data.data[c][f]).value;
                     }
                 }
-                
+
                 return processedData;
             }
         },
         "processing": false,
-        //"serverSide": true,
-        "serverSide": false,
-        "lengthMenu": [ [10, 25, 50, 100, -1], [10, 25, 50, 100, "All"] ],
+        "serverSide": true,
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
         "pagingType": "full_numbers",
         "pageLength": 25,
+        "bAutoWidth": false, 
         "columns": [
-            { "data": "hand", "title": "hand" },
-            { "data": "script_name", "title": "script name" },
-            { "data": "sequence_in_ms", "title": "sequence in ms" },
+            { "data": "hand", "title": "hand", "width": "15%" },
+            { "data": "script_name", "title": "script name", "width": "15%" },
+            { "data": "sequence_in_ms", "title": "sequence in ms", "width": "15%" },
             { "data": "where_in_ms_from", "title": "Where in MS (from)", "visible": false },
             { "data": "where_in_ms_to", "title": "Where in MS (to)", "visible": false },
             {
@@ -884,19 +1331,20 @@ function init_additions_hands()
                     let toText = row.where_in_ms_to;
 
                     //if(fromIndex)
-                        fromText = '<a  onclick="goToCanvasByLabel(\''+row.where_in_ms_from+'\')">'+row.where_in_ms_from+'</a>';
+                    fromText = '<b><a  onclick="goToCanvasByLabel(\'' + row.where_in_ms_from + '\')">' + row.where_in_ms_from + '</a></b>';
 
                     //if(toIndex)
-                        toText = '<a  onclick="goToCanvasByLabel(\''+row.where_in_ms_to+'\')">'+row.where_in_ms_to+'</a>';
+                    toText = '<b><a  onclick="goToCanvasByLabel(\'' + row.where_in_ms_to + '\')">' + row.where_in_ms_to + '</a></b>';
 
-                    if(row.where_in_ms_from == row.where_in_ms_to || row.where_in_ms_to == '-')
+                    if (row.where_in_ms_from == row.where_in_ms_to || row.where_in_ms_to == '-')
                         return fromText;
-                    return fromText +' - '+ toText;
-                }
+                    return fromText + ' - ' + toText;
+                },
+                "width": "15%"
             },
-            { "data": "is_medieval", "title": "is medieval?" , "visible": false },
+            { "data": "is_medieval", "title": "is medieval?", "visible": false },
             { "data": "is_main_text", "name": "is_main_text", "title": "is main text?", "visible": false },
-            { "data": "comment", "title": "comment" },
+            { "data": "comment", "title": "comment", "width": "40%" },
             { "data": "authors", "title": "authors", "visible": false },
             { "data": "data_contributor", "title": "data contributor", "visible": false },
         ],
@@ -904,8 +1352,8 @@ function init_additions_hands()
             { "data": "sequence_in_ms", "order": "asc" },  // Sort by the "manuscript_name" column in ascending order
             { "data": "where_in_ms_from", "order": "asc" }      // Then sort by the "manuscript" column in descending order
         ],
-        "createdRow": function(row, data, dataIndex) {
-            if (data.is_medieval == true || data.is_medieval == "true" || data.is_medieval == "yes" || data.is_medieval == "Yes") {
+        "createdRow": function (row, data, dataIndex) {
+            if (data.is_medieval == true || data.is_medieval == "true" || data.is_medieval == "yes") {
                 $(row).addClass('medieval-row');
             } else {
                 $(row).addClass('non-medieval-row');
@@ -921,36 +1369,37 @@ function init_additions_hands()
 
 //Watermarks----------------------------------------------------------------
 var watermarks_table;
-function init_watermarks_table()
-{
+function init_watermarks_table() {
     watermarks_table = $('#watermarks').DataTable({
         "ajax": {
-            "url": pageRoot+'/watermarks_info/?ms=' + manuscriptId,
+            "url": pageRoot + '/watermarks_info/?ms=' + manuscriptId,
             "dataSrc": function (data) {
-                return data.data; 
+                return data.data;
             }
         },
+        "bAutoWidth": false, 
         "columns": [
-            { "data": "name", "title": "name" },
+            { "data": "name", "title": "name", "width": "20%" },
             {
                 "data": "watermark_img",
                 "name": "watermark_img",
                 "title": "image",
                 "render": function (data, type, row, meta) {
                     return renderImg(data, type, row, meta);
-                }
+                },
+                "width": "20%" 
             },
-            { "data": "where_in_manuscript", "title": "where in MS" },
-            { "data": "external_id", "title": "external id" },
-            { "data": "comment", "title": "comment" },
+            { "data": "where_in_manuscript", "title": "where in MS", "width": "10%" },
+            { "data": "external_id", "title": "external id" , "width": "10%"},
+            { "data": "comment", "title": "comment", "width": "40%" },
             { "data": "authors", "title": "authors", "visible": false },
-            { "data": "data_contributor", "title": "data contributor" , "visible": false },
+            { "data": "data_contributor", "title": "data contributor", "visible": false },
         ],
         "order": [
             { "data": "where_in_manuscript", "order": "asc" },  // Sort by the "manuscript_name" column in ascending order
         ],
-        "initComplete": function() {
-            displayUniqueAuthorsAndContributors(watermarks_table,"#watermarks");
+        "initComplete": function () {
+            displayUniqueAuthorsAndContributors(watermarks_table, "#watermarks");
         }
     });
 }
@@ -959,15 +1408,15 @@ function init_watermarks_table()
 //Provenance----------------------------------------------------------------
 var provenance_table;
 
-function init_provenance_table()
-{
+function init_provenance_table() {
     provenance_table = $('#provenance').DataTable({
         "ajax": {
-            "url": pageRoot+'/provenance_info/?ms=' + manuscriptId,
+            "url": pageRoot + '/provenance_info/?ms=' + manuscriptId,
             "dataSrc": function (data) {
-                return data.data; 
+                return data.data;
             }
         },
+        "bAutoWidth": false, 
         "columns": [
             { "data": "id", "title": "id" , "visible": false },
             { "data": "date_from", "title": "date_from" , "visible": false },
@@ -976,16 +1425,17 @@ function init_provenance_table()
                 "data": "date",
                 "title": "Date",
                 "render": function (data, type, row, meta) {
-                    if(row.date_from == row.date_to || row.date_to == '-')
+                    if (row.date_from == row.date_to || row.date_to == '-')
                         return row.date_from;
-                    return row.date_from +' - '+ row.date_to;
-                }
+                    return row.date_from + ' - ' + row.date_to;
+                },
+                "width": '10%',
             },
-            { "data": "place", "title": "Place" },
-            { "data": "timeline_sequence", "title": "timeline_sequence" , "visible": false },
-            { "data": "comment", "title": "comment" },
+            { "data": "place", "title": "Place", "width": '30%' },
+            { "data": "timeline_sequence", "title": "timeline_sequence", "visible": false },
+            { "data": "comment", "title": "comment", "width": '60%' },
             { "data": "authors", "title": "authors", "visible": false },
-            { "data": "data_contributor", "title": "data contributor" , "visible": false },
+            { "data": "data_contributor", "title": "data contributor", "visible": false },
         ],
         "order": [
             { "data": "timeline_sequence", "order": "asc" },  // Sort by the "manuscript_name" column in ascending order
@@ -1001,24 +1451,24 @@ function init_provenance_table()
 //Bibliography----------------------------------------------------------------
 var bibliography_table;
 
-function init_bibliography_table()
-{
+function init_bibliography_table() {
     bibliography_table = $('#bibliography').DataTable({
         "ajax": {
-            "url": pageRoot+'/bibliography_info/?ms=' + manuscriptId,
+            "url": pageRoot + '/bibliography_info/?ms=' + manuscriptId,
             "dataSrc": function (data) {
                 return data.data;
             }
         },
         "processing": false,
         "serverSide": true,
-        "lengthMenu": [ [10, 25, 50, 100, -1], [10, 25, 50, 100, "All"] ],
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
         "pagingType": "full_numbers",
         "pageLength": 10,
+        "bAutoWidth": false, 
         "columns": [
-            { "data": "title", "title": "Title" },
-            { "data": "author", "title": "Author" },
-            { "data": "year", "title": "Year" }
+            { "data": "title", "title": "Title", "width": "70%"  },
+            { "data": "author", "title": "Author", "width": "20%" },
+            { "data": "year", "title": "Year", "width": "10%" }
         ]
     });
 }
@@ -1034,8 +1484,9 @@ function displayDebate(dataTable,divToAppend)
     console.log(all_data);
 
     var uniqueValuesDiv = $('<div class="printIt">');
-    var title = $('<h4>Different Opinions:</h4>');
+    var title = $('<h4 class="mt-6">Different Opinions:</h4>');
     uniqueValuesDiv.append(title);
+    uniqueValuesDiv.append('<hr />');
 
     var list = $('<ul>');
 
@@ -1078,13 +1529,13 @@ function displayDebate(dataTable,divToAppend)
         }
 
         //Debate list below
-        var list_item = $('<li>According to:' 
-            +'<div id="debate_'+debate.id+'"><b>'+debate.bibliography+'</b>'
+        var list_item = $('<li>' 
+            +'<div id="debate_'+debate.id+'">According to: <b>'+debate.bibliography+'</b>'
             +'  <span style="display: block;">'
             +'      <u>'+debate.field_name+'</u>'
             +'      is: <b>'+debate.text+'</b>'
             +'  </span>'
-            +'</li>');
+            +'</li><hr />');
         list.append(list_item);
     }
     //////////////////////////////////////////
@@ -1116,16 +1567,69 @@ function displayDebate(dataTable,divToAppend)
     $(divToAppend).after(uniqueValuesDiv);
 }
 
+function displayComments(dataTable,divToAppend)
+{
+    var all_data = dataTable.ajax.json();
+    var data = all_data.data;
+
+    var uniqueValuesDiv = $('<div class="printIt">');
+    var title = $('<h4 class="mt-6">Descriptive Details:</h4>');
+    uniqueValuesDiv.append(title);
+    uniqueValuesDiv.append('<hr />');
+
+    var list = $('<ol class="decoration_comment">');
+
+    /////////////////////////////////////////
+    var table = dataTable.table();
+    var last_subtype = "";
+
+    table.rows().every(function () {
+        var rowData = this.data();
+        var authors = "";
+        var subtypeText = "";
+
+        if(rowData.decoration_subtype != last_subtype)
+        {
+            last_subtype = rowData.decoration_subtype;
+            subtypeText = rowData.decoration_subtype+": ";
+        }
+
+        if (rowData.comments.length > 1)
+        {
+            if(subtypeText.length>1){
+            
+                var list_item = $('<li><h4>'+subtypeText+'</h4></li>');
+                list.append(list_item);
+            
+            }
+            var list_item = $(
+                '<li class="decoration_comment">' 
+                +'<div id="decoration_comment_'+rowData.id+'">'
+                +'  <span style="display: block;">'
+                +'      <b>'+rowData.ornamented_text+' </b>'
+                +      rowData.comments
+                +'  </span>'
+                +'</li><hr />');
+            list.append(list_item);
+        }
+    });
+
+    table.draw(false);
+
+    uniqueValuesDiv.append(list);
+    $(divToAppend).after(uniqueValuesDiv);
+}
+
 function displayUniqueAuthorsAndContributors(dataTable, divToAppend) {
     var table = dataTable.table();
 
     var uniqueAuthors = [];
     var uniqueContributors = [];
 
-    table.rows().every(function() {
+    table.rows().every(function () {
         var rowData = this.data();
         var authors = "";
-        if( Array.isArray(rowData.authors) ){
+        if (Array.isArray(rowData.authors)) {
             authors = rowData.authors.join(', ');
         }
 
@@ -1141,12 +1645,50 @@ function displayUniqueAuthorsAndContributors(dataTable, divToAppend) {
     var uniqueValuesDiv = $('<div>');
     var authorsString = uniqueAuthors.join(', ');
     var contributorsString = uniqueContributors.join(', ');
-    
-    var combinedParagraph = '<p class="printIt"><strong>Authors: </strong>' + authorsString + '. <strong>Data Contributors</strong>: ' + contributorsString + '</p>';
+
+    var combinedParagraph = '<p class="printIt"><strong>Authors:</strong>' + authorsString + '. <strong>Data Contributors</strong>: ' + contributorsString + '</p>';
     uniqueValuesDiv.append(combinedParagraph);
 
     $(divToAppend).after(uniqueValuesDiv);
 }
+
+function displayEntryDate(dataTable, divToAppend) {
+    var table = dataTable.table();
+    var uniqueDates = [];
+
+    table.rows().every(function () {
+        var rowData = this.data();
+        var date = rowData.entry_date;
+
+        if (!date) return;
+
+        if (!uniqueDates.includes(date)) {
+            uniqueDates.push(date);
+        }
+    });
+
+    // Sort dates (they are in yyyy-mm-dd format, so sorting as text works fine)
+    uniqueDates.sort();
+
+    var displayString = "";
+    if (uniqueDates.length >= 2) {
+        // Get first and last entry if there are 2 or more dates
+        var minDate = uniqueDates[0];
+        var maxDate = uniqueDates[uniqueDates.length - 1];
+        displayString = minDate + " - " + maxDate;
+    } else if (uniqueDates.length === 1) {
+        // If there's only one date, display that single date
+        displayString = uniqueDates[0];
+    }
+
+    // Render the result in a div below the table
+    var uniqueValuesDiv = $('<div>');
+    var combinedParagraph = '<p class="printIt"><strong>Entry date:</strong> ' + displayString + '</p>';
+    uniqueValuesDiv.append(combinedParagraph);
+
+    $(divToAppend).after(uniqueValuesDiv);
+}
+
 
 
 function displayScriptsLegend(dataTable, divToAppend) {
@@ -1154,10 +1696,10 @@ function displayScriptsLegend(dataTable, divToAppend) {
 
     // Render unique values in a div below the table
     var mainDiv = $('<div class="printIt" style="margin-top:0.5em;">'
-    +'<div class="medieval-row" style="border: 1px solid black; width: 1.1em; height:1.1em; display: inline-block; margin-right:0.5em;  margin-left: 1em; text-align: middle"></div>'
-    +'<i>Medieval</i>'
-    +'<div style="border: 1px solid black; width: 1.1em; height:1.1em; display: inline-block; margin-right:0.5em; margin-left: 1em; text-align: middle" class="non-medieval-row"></div>'
-    +'<i>Modern</i></div>');
+        + '<div class="medieval-row" style="border: 1px solid black; width: 1.1em; height:1.1em; display: inline-block; margin-right:0.5em;  margin-left: 1em; text-align: middle"></div>'
+        + '<i>Medieval</i>'
+        + '<div style="border: 1px solid black; width: 1.1em; height:1.1em; display: inline-block; margin-right:0.5em; margin-left: 1em; text-align: middle" class="non-medieval-row"></div>'
+        + '<i>Modern</i></div>');
 
     $(divToAppend).after(mainDiv);
 }
@@ -1169,10 +1711,10 @@ function displaOriginalAddedLegend(dataTable, divToAppend) {
 
     // Render unique values in a div below the table
     var mainDiv = $('<div class="printIt" style="margin-top:0.5em;">'
-    +'<div class="medieval-row" style="border: 1px solid black; width: 1.1em; height:1.1em; display: inline-block; margin-right:0.5em;  margin-left: 1em; text-align: middle"></div>'
-    +'<i>Original</i>'
-    +'<div style="border: 1px solid black; width: 1.1em; height:1.1em; display: inline-block; margin-right:0.5em; margin-left: 1em; text-align: middle" class="non-medieval-row"></div>'
-    +'<i>Added</i></div>');
+        + '<div class="medieval-row" style="border: 1px solid black; width: 1.1em; height:1.1em; display: inline-block; margin-right:0.5em;  margin-left: 1em; text-align: middle"></div>'
+        + '<i>Original</i>'
+        + '<div style="border: 1px solid black; width: 1.1em; height:1.1em; display: inline-block; margin-right:0.5em; margin-left: 1em; text-align: middle" class="non-medieval-row"></div>'
+        + '<i>Added</i></div>');
 
     $(divToAppend).after(mainDiv);
 }
@@ -1180,8 +1722,7 @@ function displaOriginalAddedLegend(dataTable, divToAppend) {
 
 
 
-function printDiv(divId, title) 
-{
+function printDiv(divId, title) {
     let mywindow = window.open('', 'PRINT', 'height=700,width=1200,top=100,left=100');
 
     mywindow.document.body.innerHTML = '<html><head><title>${title}</title><link rel="stylesheet" href="/static/css/printed.css" /></head><body>Loading data... Please be patient...</body></html>';
@@ -1190,9 +1731,8 @@ function printDiv(divId, title)
 
     //Open all:
     toggles = $('.toggle');
-    for(t in toggles)
-    {
-        if(toggles[t].getAttribute && !toggles[t].getAttribute('opened'))
+    for (t in toggles) {
+        if (toggles[t].getAttribute && !toggles[t].getAttribute('opened'))
             $(toggles[t]).click();
     }
     //mywindow.document.write(document.getElementById(divId).innerHTML);
@@ -1203,20 +1743,19 @@ function printDiv(divId, title)
     $('#additions_hands').DataTable().page.len(-1).draw();
     $('#layouts').DataTable().page.len(-1).draw();
     $('#bibliography').DataTable().page.len(-1).draw();
-    
+
     $('#content').DataTable().page.len(-1).draw();
-    $('#content').on( 'draw.dt', async function ()// waits untill the content would be fully loaded
-    {
+    $('#content').on('draw.dt', async function () {
         //console.log( 'Content table redrawn' );
         mywindow.document.body.innerHTML = '';
         mywindow.document.write(`<html><head><title>${title}</title>`);
         mywindow.document.write('<link rel="stylesheet" href="/static/css/printed.css" /></head><body >');
     
 
-        for(e in inside_elements)
-        {
-            if(inside_elements[e].outerHTML)
-                mywindow.document.write( inside_elements[e].outerHTML );
+
+        for (e in inside_elements) {
+            if (inside_elements[e].outerHTML)
+                mywindow.document.write(inside_elements[e].outerHTML);
         }
 
         let bibliography_data = await bibliography_promise;
@@ -1224,25 +1763,24 @@ function printDiv(divId, title)
         mywindow.document.write(bibliography_data.data);
 
         mywindow.document.write('</body></html>');
-    
+
         mywindow.document.close(); // necessary for IE >= 10
         mywindow.focus(); // necessary for IE >= 10*/
 
 
         //Close all:
         toggles = $('.toggle');
-        for(t in toggles)
-        {
-            if(toggles[t].getAttribute && toggles[t].getAttribute('opened'))
+        for (t in toggles) {
+            if (toggles[t].getAttribute && toggles[t].getAttribute('opened'))
                 $(toggles[t]).click();
         }
 
         mywindow.print();
 
-    } );
+    });
 
     //mywindow.close();
-    
+
     return true;
 }
 
@@ -1260,24 +1798,24 @@ function handleResizerMouseMove(e) {
         const dx = e.clientX - res_mouse_x;
 
         const newLeftWidth = ((leftWidth + dx) * 100) / resizer.parentNode.getBoundingClientRect().width;
-        if(newLeftWidth<1)
-            newLeftWidth=1;
-        
+        if (newLeftWidth < 1)
+            newLeftWidth = 1;
+
         const containerWidth = leftColumn.offsetWidth + rightColumn.offsetWidth;
 
         leftColumn.style.width = `${newLeftWidth}%`;
-        rightColumn.style.width = `${100 - newLeftWidth}%`;
+        rightColumn.style.width = `${99 - newLeftWidth}%`;
 
 
         // Adjust the position of the resizer
         const resizerPosition = (newLeftWidth / 100) * containerWidth;
         //resizer.style.left = `${resizerPosition}px`;
-        resizer.style.left =`${newLeftWidth}%`;
+        resizer.style.left = `${newLeftWidth + 1}%`;
+        // $(".mirador1").css('width', `calc(${newLeftWidth}% - .5%)`);
     }
 }
 
-manuscript_init = function()
-{
+manuscript_init = function () {
     //RESIZER:
     const leftColumn = document.getElementById("leftColumn");
     const rightColumn = document.getElementById("rightColumn");
@@ -1295,7 +1833,7 @@ manuscript_init = function()
             document.removeEventListener("mousemove", handleResizerMouseMove);
         });
     });
-    
+
 
     //Tooltips:
     /*
@@ -1391,12 +1929,12 @@ manuscript_init = function()
 
     */
 
-    
+
     //For the popup window (add comment):
     const links = document.querySelectorAll('a[data-popup="yes"]');
 
     links.forEach(link => {
-        link.addEventListener('click', function(event) {
+        link.addEventListener('click', function (event) {
             event.preventDefault();
             const url = this.getAttribute('href');
             const popupWindow = window.open(url, '_blank', 'width=700,height=800');
@@ -1407,8 +1945,8 @@ manuscript_init = function()
             }
         });
     });
-    
-    
+
+
     //Replaces _ with " " in field names.
     const fields = document.querySelectorAll('div.field-name');
 
@@ -1421,7 +1959,7 @@ manuscript_init = function()
         const ms_info = await getMSInfo()
         iiif_manifest_url = ms_info.manuscript.iiif_manifest_url;
         manifests = {}
-        manifests[iiif_manifest_url]={"provider": "external"}
+        manifests[iiif_manifest_url] = { "provider": "external" }
 
         mirador_config = {
             "id": "my-mirador",
@@ -1433,9 +1971,9 @@ manuscript_init = function()
             ],*/
             "windows": [
                 {
-                "loadedManifest": iiif_manifest_url,
-                "canvasIndex": 1,
-                "thumbnailNavigationPosition": 'far-bottom'
+                    "loadedManifest": iiif_manifest_url,
+                    "canvasIndex": 1,
+                    "thumbnailNavigationPosition": 'far-bottom'
                 }
             ]
         };
@@ -1447,22 +1985,22 @@ manuscript_init = function()
         window.allCanvasesWithLabels = []
         function getAllCanvasesWithLabels() {
 
-            if(window.allCanvasesWithLabels.length > 0)
+            if (window.allCanvasesWithLabels.length > 0)
                 return window.allCanvasesWithLabels;
 
             const state = miradorInstance.store.getState();
             const windowId = Object.keys(state.windows)[0]; // Pobierz pierwszy identyfikator okna
             const manifestId = state.windows[windowId].manifestId;
-        
+
             // Sprawdź, czy manifest jest już załadowany
             if (state.manifests[manifestId]) {
                 const manifest = state.manifests[manifestId].json;
-        
+
                 // Sprawdź, czy manifest zawiera elementy
                 if (manifest.items && manifest.items.length > 0) {
                     const canvases = manifest.items;
                     const canvasList = [];
-        
+
                     for (let i = 0; i < canvases.length; i++) {
                         const canvas = canvases[i];
                         const label = canvas.label;
@@ -1470,7 +2008,7 @@ manuscript_init = function()
                     }
 
                     window.allCanvasesWithLabels = canvasList;
-        
+
                     return canvasList;
                 } else {
                     console.error('Manifest does not contain items');
@@ -1481,11 +2019,11 @@ manuscript_init = function()
                 return [];
             }
         }
-        
+
         // Przykład użycia
         const canvasList = getAllCanvasesWithLabels();
         console.log(canvasList);
-        
+
 
         window.getAllCanvasesWithLabels = getAllCanvasesWithLabels;
 
@@ -1493,7 +2031,7 @@ manuscript_init = function()
         // Funkcja do znalezienia indeksu kanwy na podstawie etykiety
         function findCanvasIndexByLabel(label) {
             const canvases = getAllCanvasesWithLabels();
-            
+
             for (let i = 0; i < canvases.length; i++) {
                 if (canvases[i].label === label) {
                     return canvases[i].id;
@@ -1501,15 +2039,15 @@ manuscript_init = function()
             }
             return null;
         }
-        window.findCanvasIndexByLabel = findCanvasIndexByLabel;   
+        window.findCanvasIndexByLabel = findCanvasIndexByLabel;
 
         function goToCanvasById(canvasId) {
-        
+
             const state = miradorInstance.store.getState();
             const windowId = Object.keys(state.windows)[0]; // Pobierz pierwszy identyfikator okna
-        
+
             var action = Mirador.actions.setCanvas(windowId, canvasId);
-            miradorInstance.store.dispatch(action); 
+            miradorInstance.store.dispatch(action);
         }
 
         window.goToCanvasById = goToCanvasById;
@@ -1523,13 +2061,13 @@ manuscript_init = function()
                 console.error(`Canvas with label "${label}" not found`);
             }
         }
-        window.goToCanvasByLabel = goToCanvasByLabel;    
+        window.goToCanvasByLabel = goToCanvasByLabel;
 
-    
+
         // Przykład użyciaj
         // goToCanvasById('my-mirador', 'your-canvas-id'); // Zamień 'your-canvas-id' na właściwy identyfikator kanwy
-        
-    
+
+
     })()
 
     /*var mirador = Mirador({
@@ -1541,24 +2079,25 @@ manuscript_init = function()
 
 
     $("#btnPrint").on("click", function () {
-        printDiv('rightColumn','Liturgica Poloniae');
+        printDiv('rightColumn', 'Liturgica Poloniae');
     });
+
+    
 
 }
 
-async function map_init()
-{
-    
+async function map_init() {
+
     //Provenance:
     var southWest = L.latLng(-89.98155760646617, -180),
-    northEast = L.latLng(89.99346179538875, 180);
+        northEast = L.latLng(89.99346179538875, 180);
     var bounds = L.latLngBounds(southWest, northEast);
 
     var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     });
-    map = L.map('map',{
+    map = L.map('map', {
         center: bounds.getCenter(),
         zoom: 2,
         layers: [osm],

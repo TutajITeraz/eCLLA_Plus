@@ -8,7 +8,7 @@ from django.contrib.auth import login, authenticate
 
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .models import Manuscripts, AttributeDebate, Content, Formulas, Subjects, RiteNames, ManuscriptMusicNotations, Provenance, Codicology, Layouts, TimeReference, Bibliography, EditionContent, BindingTypes, BindingStyles, BindingMaterials, Colours, Clla, Projects, MSProjects, UserOpenAIAPIKey
+from .models import Manuscripts, AttributeDebate, Decoration, Content, Formulas, Subjects, Characteristics, DecorationTechniques, RiteNames, ManuscriptMusicNotations, Provenance, Codicology, Layouts, TimeReference, Bibliography, EditionContent, BindingTypes, BindingStyles, BindingMaterials, Colours, Clla, Projects, MSProjects, DecorationTypes, BindingDecorationTypes, BindingComponents, Binding, ManuscriptBindingComponents,  UserOpenAIAPIKey
 from django.http import JsonResponse
 from django.contrib.contenttypes.models import ContentType
 
@@ -67,6 +67,10 @@ import io
 
 #For TEI:
 from xml.etree.ElementTree import Element, SubElement, tostring
+#For TEI XML Template:
+from django.views.generic import TemplateView
+from django.template.loader import render_to_string
+
 
 #for Registration:
 from django.contrib.auth.models import User, Group
@@ -336,6 +340,22 @@ class CustomDatatablesFilterBackend(DatatablesFilterBackend):
         if where_max is not None:
             queryset = queryset.filter(where_in_ms_from__lte=where_max)
 
+        
+        ##Order
+        order_column_index = int(request.query_params.get('order[0][column]', 0))
+        order_column_name = request.query_params.get(f'columns[{order_column_index}][data]', 'name')
+        order_direction = request.query_params.get('order[0][dir]', 'asc')
+        print("--------------------------------------------")
+        print(order_column_index)
+        print(order_column_name)
+        print(order_direction)
+        print("--------------------------------------------")
+        # Apply ordering to queryset
+        if order_direction == 'asc':
+            queryset = queryset.order_by(order_column_name)
+        else:
+            queryset = queryset.order_by(f'-{order_column_name}')
+
         return queryset
 
 class ContentGlobalFilter(DatatablesFilterSet):
@@ -421,13 +441,15 @@ class ManuscriptsViewSet(viewsets.ModelViewSet):
         contemporary_repository_place = self.request.query_params.get('contemporary_repository_place')
         shelfmark = self.request.query_params.get('shelfmark')
         dating = self.request.query_params.get('dating')
-        place_of_origins = self.request.query_params.get('place_of_origins')
+        place_of_origin = self.request.query_params.get('place_of_origin')
         main_script = self.request.query_params.get('main_script')
         binding_date = self.request.query_params.get('binding_date')
 
         # Pobierz wartości zapytań dla minimalnych i maksymalnych wartości
-        how_many_columns_min = self.request.query_params.get('how_many_columns_min')
-        how_many_columns_max = self.request.query_params.get('how_many_columns_max')
+        #how_many_columns_min = self.request.query_params.get('how_many_columns_min')
+        #how_many_columns_max = self.request.query_params.get('how_many_columns_max')
+        how_many_columns = self.request.query_params.get('how_many_columns')
+        
         lines_per_page_min = self.request.query_params.get('lines_per_page_min')
         lines_per_page_max = self.request.query_params.get('lines_per_page_max')
         how_many_quires_min = self.request.query_params.get('how_many_quires_min')
@@ -446,6 +468,8 @@ class ManuscriptsViewSet(viewsets.ModelViewSet):
 
         binding_date_min = self.request.query_params.get('binding_date_min')
         binding_date_max = self.request.query_params.get('binding_date_max')
+        binding_date_years_min = self.request.query_params.get('binding_date_years_min')
+        binding_date_years_max = self.request.query_params.get('binding_date_years_max')
 
 
         decoration_true = self.request.query_params.get('decoration_true')
@@ -478,6 +502,9 @@ class ManuscriptsViewSet(viewsets.ModelViewSet):
         print("projectId = "+str(projectId))
         if projectId != 0:
             queryset = queryset.filter(ms_projects__project__id=projectId)
+
+        #Always only main
+        queryset = queryset.filter(display_as_main=True)
 
         
         #Main search
@@ -512,29 +539,32 @@ class ManuscriptsViewSet(viewsets.ModelViewSet):
         if dating:
             dating_ids = dating.split(';')
             queryset = queryset.filter(dating__in=dating_ids)
-        if place_of_origins:
-            place_of_origins_ids = place_of_origins.split(';')
-            queryset = queryset.filter(place_of_origins__in=place_of_origins_ids)
+        if place_of_origin:
+            place_of_origin_ids = place_of_origin.split(';')
+            queryset = queryset.filter(place_of_origin__in=place_of_origin_ids)
         if main_script:
             main_script_ids = main_script.split(';')
             queryset = queryset.filter(main_script__in=main_script_ids)
         if binding_date:
             binding_date_ids = binding_date.split(';')
             queryset = queryset.filter(binding_date__in=binding_date_ids)
+        if how_many_columns:
+            how_many_columns_ids = how_many_columns.split(';')
+            queryset = queryset.filter(how_many_columns_mostly__in=how_many_columns_ids)
         
 
 
         # Filtruj po minimalnych wartościach, jeśli są dostarczone
-        if how_many_columns_min and how_many_columns_min.isdigit():
-            queryset = queryset.filter(how_many_columns_mostly__gte=int(how_many_columns_min))
+        #if how_many_columns_min and how_many_columns_min.isdigit():
+        #    queryset = queryset.filter(how_many_columns_mostly__gte=int(how_many_columns_min))
         if lines_per_page_min and lines_per_page_min.isdigit():
             queryset = queryset.filter(lines_per_page_usually__gte=int(lines_per_page_min))
         if how_many_quires_min and how_many_quires_min.isdigit():
             queryset = queryset.filter(how_many_quires__gte=int(how_many_quires_min))
 
         # Filtruj po maksymalnych wartościach, jeśli są dostarczone
-        if how_many_columns_max and how_many_columns_max.isdigit():
-            queryset = queryset.filter(how_many_columns_mostly__lte=int(how_many_columns_max))
+        #if how_many_columns_max and how_many_columns_max.isdigit():
+        #    queryset = queryset.filter(how_many_columns_mostly__lte=int(how_many_columns_max))
         if lines_per_page_max and lines_per_page_max.isdigit():
             queryset = queryset.filter(lines_per_page_usually__lte=int(lines_per_page_max))
         if how_many_quires_max and how_many_quires_max.isdigit():
@@ -545,6 +575,12 @@ class ManuscriptsViewSet(viewsets.ModelViewSet):
 
         if binding_date_max and binding_date_max.isdigit():
             queryset = queryset.filter(Q(binding_date__century_from__lte=int(binding_date_max)) | Q(binding_date__century_to__lte=int(binding_date_max)))
+        
+        if binding_date_years_min and binding_date_years_min.isdigit():
+            queryset = queryset.filter(Q(binding_date__year_from__gte=int(binding_date_years_min)) | Q(binding_date__year_to__gte=int(binding_date_years_min)))
+
+        if binding_date_years_max and binding_date_years_max.isdigit():
+            queryset = queryset.filter(Q(binding_date__year_from__lte=int(binding_date_years_max)) | Q(binding_date__year_to__lte=int(binding_date_years_max)))
 
         if dating_min and dating_min.isdigit():
             queryset = queryset.filter(Q(dating__century_from__gte=int(dating_min)) | Q(dating__century_to__gte=int(dating_min)))
@@ -613,36 +649,45 @@ class ManuscriptsViewSet(viewsets.ModelViewSet):
         paper_leafs_true = self.request.query_params.get('paper_leafs_true')
         watermarks_true = self.request.query_params.get('watermarks_true')
         is_main_text_true = self.request.query_params.get('is_main_text_true')
+        is_hand_identified_true = self.request.query_params.get('is_hand_identified_true')
         written_above_the_top_line_true = self.request.query_params.get('written_above_the_top_line_true')
         binding_decoration_true = self.request.query_params.get('binding_decoration_true')
         parchment_shrinkage_true = self.request.query_params.get('parchment_shrinkage_true')
-        illegible_text_fragments_true = self.request.query_params.get('illegible_text_fragments_true')
+        illegible_text_true = self.request.query_params.get('illegible_text_true')
         ink_corrosion_true = self.request.query_params.get('ink_corrosion_true')
         copper_corrosion_true = self.request.query_params.get('copper_corrosion_true')
         powdering_or_cracking_paint_layer_true = self.request.query_params.get('powdering_or_cracking_paint_layer_true')
         conservation_true = self.request.query_params.get('conservation_true')
+        darkening_true = self.request.query_params.get('darkening_true')
+        water_staining_true = self.request.query_params.get('water_staining_true')
+        historic_repairs_true = self.request.query_params.get('historic_repairs_true')
         display_as_main_true = self.request.query_params.get('display_as_main_true')
         
         paper_leafs_false = self.request.query_params.get('paper_leafs_false')
         watermarks_false = self.request.query_params.get('watermarks_false')
         is_main_text_false = self.request.query_params.get('is_main_text_false')
+        is_hand_identified_false = self.request.query_params.get('is_hand_identified_false')
         written_above_the_top_line_false = self.request.query_params.get('written_above_the_top_line_false')
         binding_decoration_false = self.request.query_params.get('binding_decoration_false')
         parchment_shrinkage_false = self.request.query_params.get('parchment_shrinkage_false')
-        illegible_text_fragments_false = self.request.query_params.get('illegible_text_fragments_false')
+        illegible_text_false = self.request.query_params.get('illegible_text_false')
         ink_corrosion_false = self.request.query_params.get('ink_corrosion_false')
         copper_corrosion_false = self.request.query_params.get('copper_corrosion_false')
         powdering_or_cracking_paint_layer_false = self.request.query_params.get('powdering_or_cracking_paint_layer_false')
         conservation_false = self.request.query_params.get('conservation_false')
+        darkening_false = self.request.query_params.get('darkening_false')
+        water_staining_false = self.request.query_params.get('water_staining_false')
+        historic_repairs_false = self.request.query_params.get('historic_repairs_false')
         display_as_main_false = self.request.query_params.get('display_as_main_false')
         
         paper_leafs_true = True if paper_leafs_true == 'true' else False if paper_leafs_true == 'false' else None
         watermarks_true = True if watermarks_true == 'true' else False if watermarks_true == 'false' else None
         is_main_text_true = True if is_main_text_true == 'true' else False if is_main_text_true == 'false' else None
+        is_hand_identified_true = True if is_hand_identified_true == 'true' else False if is_hand_identified_true == 'false' else None
         written_above_the_top_line_true = True if written_above_the_top_line_true == 'true' else False if written_above_the_top_line_true == 'false' else None
         binding_decoration_true = True if binding_decoration_true == 'true' else False if binding_decoration_true == 'false' else None
         parchment_shrinkage_true = True if parchment_shrinkage_true == 'true' else False if parchment_shrinkage_true == 'false' else None
-        illegible_text_fragments_true = True if illegible_text_fragments_true == 'true' else False if binding_decoration_true == 'false' else None
+        illegible_text_true = True if illegible_text_true == 'true' else False if binding_decoration_true == 'false' else None
         ink_corrosion_true = True if ink_corrosion_true == 'true' else False if ink_corrosion_true == 'false' else None
         copper_corrosion_true = True if copper_corrosion_true == 'true' else False if copper_corrosion_true == 'false' else None
         powdering_or_cracking_paint_layer_true = True if powdering_or_cracking_paint_layer_true == 'true' else False if powdering_or_cracking_paint_layer_true == 'false' else None
@@ -652,17 +697,25 @@ class ManuscriptsViewSet(viewsets.ModelViewSet):
         paper_leafs_false = True if paper_leafs_false == 'true' else False if paper_leafs_false == 'false' else None
         watermarks_false = True if watermarks_false == 'true' else False if watermarks_false == 'false' else None
         is_main_text_false = True if is_main_text_false == 'true' else False if is_main_text_false == 'false' else None
+        is_hand_identified_false = True if is_hand_identified_false == 'true' else False if is_hand_identified_false == 'false' else None
         written_above_the_top_line_false = True if written_above_the_top_line_false == 'true' else False if written_above_the_top_line_false == 'false' else None
         binding_decoration_false = True if binding_decoration_false == 'true' else False if binding_decoration_false == 'false' else None
         parchment_shrinkage_false = True if parchment_shrinkage_false == 'true' else False if parchment_shrinkage_false == 'false' else None
-        illegible_text_fragments_false = True if illegible_text_fragments_false == 'true' else False if illegible_text_fragments_false == 'false' else None
+        illegible_text_false = True if illegible_text_false == 'true' else False if illegible_text_false == 'false' else None
         ink_corrosion_false = True if ink_corrosion_false == 'true' else False if ink_corrosion_false == 'false' else None
         copper_corrosion_false = True if copper_corrosion_false == 'true' else False if copper_corrosion_false == 'false' else None
         powdering_or_cracking_paint_layer_false = True if powdering_or_cracking_paint_layer_false == 'true' else False if powdering_or_cracking_paint_layer_false == 'false' else None
         conservation_false = True if conservation_false == 'true' else False if conservation_false == 'false' else None
         display_as_main_false = True if display_as_main_false == 'true' else False if display_as_main_false == 'false' else None
 
-        
+        darkening_true = True if darkening_true == 'true' else False if darkening_true == 'false' else None
+        darkening_false = True if darkening_false == 'true' else False if darkening_false == 'false' else None
+        water_staining_true = True if water_staining_true == 'true' else False if water_staining_true == 'false' else None
+        water_staining_false = True if water_staining_false == 'true' else False if water_staining_false == 'false' else None
+        historic_repairs_true = True if historic_repairs_true == 'true' else False if historic_repairs_true == 'false' else None
+        historic_repairs_false = True if historic_repairs_false == 'true' else False if historic_repairs_false == 'false' else None
+
+
         if paper_leafs_false and not paper_leafs_true:
             queryset = queryset.exclude(ms_codicology__number_of_paper_leaves__gt=0)
         if paper_leafs_true and not paper_leafs_false:
@@ -677,6 +730,13 @@ class ManuscriptsViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(ms_hands__is_main_text=False)
         if is_main_text_true and not is_main_text_false:
             queryset = queryset.exclude(ms_hands__is_main_text=False)
+
+        if is_hand_identified_false and not is_hand_identified_true:
+            queryset = queryset.annotate(has_identified_hands=Count('ms_hands', filter=Q(ms_hands__hand__is_identified=True))) \
+                            .filter(has_identified_hands=0)  # Manuscripts with no identified hands
+
+        if is_hand_identified_true and not is_hand_identified_false:
+            queryset = queryset.filter(ms_hands__hand__is_identified=True).distinct()  # Manuscripts with at least one identified hand
 
         if written_above_the_top_line_false and not written_above_the_top_line_true:
             queryset = queryset.filter(ms_layouts__written_above_the_top_line=False)
@@ -693,10 +753,10 @@ class ManuscriptsViewSet(viewsets.ModelViewSet):
         if parchment_shrinkage_true and not parchment_shrinkage_false:
             queryset = queryset.filter(ms_condition__parchment_shrinkage=True)
         
-        if illegible_text_fragments_false and not illegible_text_fragments_true:
-            queryset = queryset.filter(ms_condition__illegible_text_fragments=False)
-        if illegible_text_fragments_true and not illegible_text_fragments_false:
-            queryset = queryset.filter(ms_condition__illegible_text_fragments=True)
+        if illegible_text_false and not illegible_text_true:
+            queryset = queryset.filter(ms_condition__illegible_text=False)
+        if illegible_text_true and not illegible_text_false:
+            queryset = queryset.filter(ms_condition__illegible_text=True)
         
         if ink_corrosion_false and not ink_corrosion_true:
             queryset = queryset.filter(ms_condition__ink_corrosion=False)
@@ -718,10 +778,27 @@ class ManuscriptsViewSet(viewsets.ModelViewSet):
         if conservation_true and not conservation_false:
             queryset = queryset.filter(ms_condition__conservation=True)
 
-        if display_as_main_false and not display_as_main_true:
-            queryset = queryset.exclude(display_as_main=True)
-        if display_as_main_true and not display_as_main_false:
-            queryset = queryset.filter(display_as_main=True)
+        if darkening_false and not darkening_true:
+            queryset = queryset.filter(ms_condition__darkening=False)
+        if darkening_true and not darkening_false:
+            queryset = queryset.filter(ms_condition__darkening=True)
+
+        if water_staining_false and not water_staining_true:
+            queryset = queryset.filter(ms_condition__water_staining=False)
+        if water_staining_true and not water_staining_false:
+            queryset = queryset.filter(ms_condition__water_staining=True)
+
+        if historic_repairs_false and not historic_repairs_true:
+            queryset = queryset.filter(ms_condition__historic_repairs=False)
+        if historic_repairs_true and not historic_repairs_false:
+            queryset = queryset.filter(ms_condition__historic_repairs=True)
+
+        #if display_as_main_false and not display_as_main_true:
+        #    queryset = queryset.exclude(display_as_main=True)
+        #if display_as_main_true and not display_as_main_false:
+        #    queryset = queryset.filter(display_as_main=True)
+
+        
 
         #New min/max values:
         binding_height_min = self.request.query_params.get('binding_height_min')
@@ -731,7 +808,8 @@ class ManuscriptsViewSet(viewsets.ModelViewSet):
         distance_between_horizontal_ruling_min = self.request.query_params.get('distance_between_horizontal_ruling_min')
         distance_between_vertical_ruling_min = self.request.query_params.get('distance_between_vertical_ruling_min')
         ms_how_many_hands_min = self.request.query_params.get('ms_how_many_hands_min')
-        page_size_wh_min = self.request.query_params.get('page_size_wh_min')
+        page_size_w_min = self.request.query_params.get('page_size_w_min')
+        page_size_h_min = self.request.query_params.get('page_size_h_min')
         parchment_thickness_min = self.request.query_params.get('parchment_thickness_min')
         binding_height_max = self.request.query_params.get('binding_height_max')
         binding_width_max = self.request.query_params.get('binding_width_max')
@@ -740,7 +818,8 @@ class ManuscriptsViewSet(viewsets.ModelViewSet):
         distance_between_horizontal_ruling_max = self.request.query_params.get('distance_between_horizontal_ruling_max')
         distance_between_vertical_ruling_max = self.request.query_params.get('distance_between_vertical_ruling_max')
         ms_how_many_hands_max = self.request.query_params.get('ms_how_many_hands_max')
-        page_size_wh_max = self.request.query_params.get('page_size_wh_max')
+        page_size_w_max = self.request.query_params.get('page_size_w_max')
+        page_size_h_max = self.request.query_params.get('page_size_h_max')
         parchment_thickness_max = self.request.query_params.get('parchment_thickness_max')
         block_size_min = self.request.query_params.get('block_size_min')
         block_size_max = self.request.query_params.get('block_size_max')
@@ -776,21 +855,32 @@ class ManuscriptsViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(ms_layouts__distance_between_vertical_ruling__lte=int(distance_between_vertical_ruling_max))
 
         if ms_how_many_hands_min and ms_how_many_hands_min.isdigit():
-            queryset = queryset.annotate(num_hands=Count('ms_hands')).filter(num_hands__gte=int(ms_how_many_hands_min))
+            queryset = queryset.annotate(num_hands=Count('ms_hands', filter=Q(ms_hands__is_main_text=True))) \
+                            .filter(num_hands__gte=int(ms_how_many_hands_min))
         if ms_how_many_hands_max and ms_how_many_hands_max.isdigit():
-            queryset = queryset.annotate(num_hands=Count('ms_hands')).filter(num_hands__lte=int(ms_how_many_hands_max))
+            queryset = queryset.annotate(num_hands=Count('ms_hands', filter=Q(ms_hands__is_main_text=True))) \
+                            .filter(num_hands__lte=int(ms_how_many_hands_max))
 
-        if page_size_wh_min and page_size_wh_min.isdigit():
+        if page_size_w_min and page_size_w_min.isdigit():
             queryset = queryset.filter(
-                Q(ms_codicology__page_size_max_height__gte=int(page_size_wh_min)) &
-                Q(ms_codicology__page_size_max_width__gte=int(page_size_wh_min))
+                Q(ms_codicology__page_size_max_width__gte=int(page_size_w_min))
             )
 
-        if page_size_wh_max and page_size_wh_max.isdigit():
+        if page_size_w_max and page_size_w_max.isdigit():
             queryset = queryset.filter(
-                Q(ms_codicology__page_size_max_height__lte=int(page_size_wh_max)) &
-                Q(ms_codicology__page_size_max_width__lte=int(page_size_wh_max))
+                Q(ms_codicology__page_size_max_width__lte=int(page_size_w_max))
             )
+
+        if page_size_h_min and page_size_h_min.isdigit():
+            queryset = queryset.filter(
+                Q(ms_codicology__page_size_max_height__gte=int(page_size_h_min))
+            )
+
+        if page_size_h_max and page_size_h_max.isdigit():
+            queryset = queryset.filter(
+                Q(ms_codicology__page_size_max_height__lte=int(page_size_h_max))
+            )
+
 
         if parchment_thickness_min and float(parchment_thickness_min):
             queryset = queryset.filter(ms_codicology__parchment_thickness_min__gte=float(parchment_thickness_min))
@@ -802,6 +892,36 @@ class ManuscriptsViewSet(viewsets.ModelViewSet):
         if block_size_max and block_size_max.isdigit():
             queryset = queryset.filter(ms_binding__block_max__lte=int(block_size_max))
 
+        
+        #Decoration min/max:
+        decoration_size_height_min = self.request.query_params.get('decoration_size_height_min')
+        decoration_size_height_max = self.request.query_params.get('decoration_size_height_max')
+        decoration_size_width_min = self.request.query_params.get('decoration_size_width_min')
+        decoration_size_width_max = self.request.query_params.get('decoration_size_width_max')
+        decoration_addition_date_min = self.request.query_params.get('decoration_addition_date_min')
+        decoration_addition_date_max = self.request.query_params.get('decoration_addition_date_max')
+        decoration_addition_date_years_min = self.request.query_params.get('decoration_addition_date_years_min')
+        decoration_addition_date_years_max = self.request.query_params.get('decoration_addition_date_years_max')
+
+        if decoration_size_height_min and decoration_size_height_min.isdigit():
+            queryset = queryset.filter(ms_decorations__size_height_min__gte=int(decoration_size_height_min))
+        if decoration_size_height_max and decoration_size_height_max.isdigit():
+            queryset = queryset.filter(ms_decorations__size_height_max__lte=int(decoration_size_height_max))
+
+        if decoration_size_width_min and decoration_size_width_min.isdigit():
+            queryset = queryset.filter(ms_decorations__size_width_min__gte=int(decoration_size_width_min))
+        if decoration_size_width_max and decoration_size_width_max.isdigit():
+            queryset = queryset.filter(ms_decorations__size_width_max__lte=int(decoration_size_width_max))
+
+        if decoration_addition_date_min and decoration_addition_date_min.isdigit():
+            queryset = queryset.filter(ms_decorations__date_of_the_addition__century_from__gte=int(decoration_addition_date_min))
+        if decoration_addition_date_max and decoration_addition_date_max.isdigit():
+            queryset = queryset.filter(ms_decorations__date_of_the_addition__century_from__lte=int(decoration_addition_date_max))
+
+        if decoration_addition_date_years_min and decoration_addition_date_years_min.isdigit():
+            queryset = queryset.filter(ms_decorations__date_of_the_addition__year_from__gte=int(decoration_addition_date_years_min))
+        if decoration_addition_date_years_max and decoration_addition_date_years_max.isdigit():
+            queryset = queryset.filter(ms_decorations__date_of_the_addition__year_to__lte=int(decoration_addition_date_years_max))
 
         #New select values:
         parchment_colour_select = self.request.query_params.get('parchment_colour_select')
@@ -814,12 +934,29 @@ class ManuscriptsViewSet(viewsets.ModelViewSet):
         binding_type_select = self.request.query_params.get('binding_type_select')
         binding_style_select = self.request.query_params.get('binding_style_select')
         binding_material_select = self.request.query_params.get('binding_material_select')
+        binding_components_select = self.request.query_params.get('binding_components_select')
+        binding_category_select = self.request.query_params.get('binding_category_select')
+        binding_decoration_type_select = self.request.query_params.get('binding_decoration_select')
         formula_select = self.request.query_params.get('formula_select')
         rite_select = self.request.query_params.get('rite_select')
         damage_select = self.request.query_params.get('damage_select')
         provenance_place_select = self.request.query_params.get('provenance_place_select')
+        provenance_place_countries_select = self.request.query_params.get('provenance_place_countries_select')
         title_select = self.request.query_params.get('title_select')
         author_select = self.request.query_params.get('author_select')
+
+        #New decotation:
+        original_or_added_select = self.request.query_params.get('original_or_added_select')
+        location_on_the_page_select = self.request.query_params.get('location_on_the_page_select')
+        decoration_type_select = self.request.query_params.get('decoration_type_select')
+        decoration_subtype_select = self.request.query_params.get('decoration_subtype_select')
+        size_characteristic_select = self.request.query_params.get('size_characteristic_select')
+        monochrome_or_colour_select = self.request.query_params.get('monochrome_or_colour_select')
+        technique_select = self.request.query_params.get('technique_select')
+        ornamented_text_select = self.request.query_params.get('ornamented_text_select')
+        decoration_subject_select = self.request.query_params.get('decoration_subject_select')
+        decoration_colours_select = self.request.query_params.get('decoration_colours_select')
+        decoration_characteristics_select = self.request.query_params.get('decoration_characteristics_select')
 
         clla_liturgical_genre_select = self.request.query_params.get('clla_liturgical_genre_select')
         clla_provenance_place_select = self.request.query_params.get('clla_provenance_place_select')
@@ -848,7 +985,7 @@ class ManuscriptsViewSet(viewsets.ModelViewSet):
                 queryset = queryset.filter(ms_layouts__pricking=q)
         if binding_place_of_origin_select: 
             binding_place_of_origin_select_ids = binding_place_of_origin_select.split(';')
-            queryset = queryset.filter(ms_binding__place_of_origins__in=binding_place_of_origin_select_ids)
+            queryset = queryset.filter(ms_binding__place_of_origin__in=binding_place_of_origin_select_ids)
         if binding_type_select: 
             binding_type_select_ids = binding_type_select.split(';')
             queryset = queryset.filter(ms_binding__type_of_binding__in=binding_type_select_ids)
@@ -859,6 +996,18 @@ class ManuscriptsViewSet(viewsets.ModelViewSet):
             binding_material_select_ids = binding_material_select.split(';')
             for q in binding_material_select_ids:
                 queryset = queryset.filter(ms_binding_materials__material=q)
+        if binding_components_select: 
+            binding_components_select_ids = binding_components_select.split(';')
+            for q in binding_components_select_ids:
+                queryset = queryset.filter(ms_binding_components__component=q)
+        if binding_category_select: 
+            binding_category_select_ids = binding_category_select.split(';')
+            for q in binding_category_select_ids:
+                queryset = queryset.filter(ms_binding__category=q)
+        if binding_decoration_type_select: 
+            binding_decoration_type_select_ids = binding_decoration_type_select.split(';')
+            for q in binding_decoration_type_select_ids:
+                queryset = queryset.filter(ms_binding_decorations__decoration=q)
         if formula_select: 
             formula_select_ids = formula_select.split(';')
             for q in formula_select_ids:
@@ -874,6 +1023,10 @@ class ManuscriptsViewSet(viewsets.ModelViewSet):
             provenance_place_select_ids = provenance_place_select.split(';')
             for q in provenance_place_select_ids:
                 queryset = queryset.filter(ms_provenance__place=q)
+        if provenance_place_countries_select: 
+            provenance_place_countries_select_ids = provenance_place_countries_select.split(';')
+            for q in provenance_place_countries_select_ids:
+                queryset = queryset.filter(ms_provenance__place__country_today_eng=q)
         if title_select: 
             title_select_ids = title_select.split(';')
             for q in title_select_ids:
@@ -891,6 +1044,64 @@ class ManuscriptsViewSet(viewsets.ModelViewSet):
             clla_provenance_place_select_ids = clla_provenance_place_select.split(';')
             for q in clla_provenance_place_select_ids:
                 queryset = queryset.filter(ms_clla__provenance=q)
+
+        if original_or_added_select: 
+            original_or_added_select_ids = original_or_added_select.split(';')
+            #queryset = queryset.filter(ms_decorations__original_or_added__in=original_or_added_select_ids)
+            for q in original_or_added_select_ids:
+                queryset = queryset.filter(ms_decorations__original_or_added=q)
+        if location_on_the_page_select: 
+            location_on_the_page_select_ids = location_on_the_page_select.split(';')
+            #queryset = queryset.filter(ms_decorations__location_on_the_page__in=location_on_the_page_select_ids)
+            for q in location_on_the_page_select_ids:
+                queryset = queryset.filter(ms_decorations__location_on_the_page=q)
+
+        if decoration_type_select: 
+            decoration_type_select_ids = decoration_type_select.split(';')
+            #queryset = queryset.filter(ms_decorations__decoration_type__in=decoration_type_select_ids)
+            for q in decoration_type_select_ids:
+                queryset = queryset.filter(ms_decorations__decoration_type=q)
+        if decoration_subtype_select: 
+            decoration_subtype_select_ids = decoration_subtype_select.split(';')
+            #queryset = queryset.filter(ms_decorations__decoration_subtype__in=decoration_subtype_select_ids)
+            for q in decoration_subtype_select_ids:
+                queryset = queryset.filter(ms_decorations__decoration_subtype=q)
+
+        if size_characteristic_select: 
+            size_characteristic_select_ids = size_characteristic_select.split(';')
+            #queryset = queryset.filter(ms_decorations__size_characteristic__in=size_characteristic_select_ids)
+            for q in size_characteristic_select_ids:
+                queryset = queryset.filter(ms_decorations__size_characteristic=q)
+        if monochrome_or_colour_select: 
+            monochrome_or_colour_select_ids = monochrome_or_colour_select.split(';')
+            #queryset = queryset.filter(ms_decorations__monochrome_or_colour__in=monochrome_or_colour_select_ids)
+            for q in monochrome_or_colour_select_ids:
+                queryset = queryset.filter(ms_decorations__monochrome_or_colour=q)
+        if technique_select: 
+            technique_select_ids = technique_select.split(';')
+            #queryset = queryset.filter(ms_decorations__technique__in=technique_select_ids)
+            for q in technique_select_ids:
+                queryset = queryset.filter(ms_decorations__technique=q)
+        if ornamented_text_select: 
+            ornamented_text_select_ids = ornamented_text_select.split(';')
+            #queryset = queryset.filter(ms_decorations__ornamented_text__in=ornamented_text_select_ids)
+            for q in ornamented_text_select_ids:
+                queryset = queryset.filter(ms_decorations__ornamented_text=q)
+        if decoration_subject_select: 
+            decoration_subject_select_ids = decoration_subject_select.split(';')
+            #queryset = queryset.filter(ms_decorations__decoration_subjects__subject__in=decoration_subject_select_ids)
+            for q in decoration_subject_select_ids:
+                queryset = queryset.filter(ms_decorations__decoration_subjects__subject=q)
+        if decoration_colours_select: 
+            decoration_colours_select_ids = decoration_colours_select.split(';')
+            #queryset = queryset.filter(ms_decorations__decoration_colours__colour__in=decoration_colours_select_ids)
+            for q in decoration_colours_select_ids:
+                queryset = queryset.filter(ms_decorations__decoration_colours__colour=q)
+        if decoration_characteristics_select: 
+            decoration_characteristics_select_ids = decoration_characteristics_select.split(';')
+            #queryset = queryset.filter(ms_decorations__decoration_characteristics__characteristics__in=decoration_characteristics_select_ids)
+            for q in decoration_characteristics_select_ids:
+                queryset = queryset.filter(ms_decorations__decoration_characteristics__characteristics=q)
 
 
         if len(formula_text)>1:
@@ -1016,10 +1227,29 @@ class LayoutsAjaxView(View):
 class DecorationAjaxView(View):
     def get(self, request, *args, **kwargs):
         pk = self.request.GET.get('ms')
+        decoration_type = self.request.GET.get('decoration_type')
+
         ms_instance = get_object_or_404(Manuscripts, id=pk)
         skip_fields = ['manuscript']  # Add any other fields to skip
         info_queryset = ms_instance.ms_decorations.all()
-        info_dict = [get_obj_dictionary(entry, skip_fields) for entry in info_queryset]
+
+        if decoration_type and len(decoration_type)>3 :
+            info_queryset = info_queryset.filter(decoration_type__name=decoration_type)
+
+        info_dict = []
+        for entry in info_queryset:
+            obj_dict = get_obj_dictionary(entry, skip_fields)
+            
+            # Fetching related subjects, colours, and characteristics
+            obj_dict['decoration_subjects'] = [str(sub.subject) for sub in entry.decoration_subjects.all()]
+            obj_dict['decoration_colours'] = [str(col.colour) for col in entry.decoration_colours.all()]
+            obj_dict['decoration_characteristics'] = [str(char.characteristics) for char in entry.decoration_characteristics.all()]
+            
+            obj_dict['entry_date'] = entry.entry_date.strftime('%Y-%m-%d')  # format date as string
+
+
+            info_dict.append(obj_dict)
+
 
         debate = []
         for instance in info_queryset:
@@ -1161,11 +1391,29 @@ class BindingAjaxView(View):
             decorations_str += m['decoration'] +", "
         decorations_str = decorations_str[:-2]
 
+        if len(decorations_str) < 2:
+            decorations_str = "No" 
+
+
+        #Binding components:
+        components_queryset = ms_instance.ms_binding_components.all()
+        components_dict = [get_obj_dictionary(entry, skip_fields) for entry in components_queryset]
+
+        components_str = ""
+
+        for m in components_dict:
+            components_str += m['component'] +", "
+        components_str = components_str[:-2]
+
+        if len(components_str) < 2:
+            components_str = "No" 
+
         data = {}
 
         if len(info_dict) > 0:
             info_dict[0]['materials'] = materials_str
             info_dict[0]['decorations'] = decorations_str
+            info_dict[0]['components'] = components_str
 
 
             # Create the response dictionary
@@ -1417,6 +1665,25 @@ class ContentAutocomplete(autocomplete.Select2QuerySetView):
 
         return qs
 
+class ManuscriptsAutocompleteMain(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        if not self.request.user.is_authenticated:
+            return Manuscripts.objects.none()
+
+        qs = Manuscripts.objects.all()
+
+        projectId = self.request.GET.get('project_id', None)
+        if projectId:
+            qs = qs.filter(ms_projects__project__id=projectId)
+        qs = qs.filter(display_as_main=True)
+
+
+        if self.q:
+            qs = qs.filter(name__icontains=self.q)
+
+        return qs
+
 class ManuscriptsAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
         # Don't forget to filter out results depending on the visitor !
@@ -1471,6 +1738,12 @@ class MSForeignIdAutocomplete(autocomplete.Select2QuerySetView):
         # Pobierz unikalne wartości pola foreign_id, które nie są puste
         qs = Manuscripts.objects.exclude(foreign_id__isnull=True).exclude(foreign_id__exact='').values('foreign_id').distinct()
 
+        projectId = self.request.GET.get('project_id', None)
+        if projectId:
+            qs = qs.filter(ms_projects__project__id=projectId)
+        qs = qs.filter(display_as_main=True)
+
+
         # Filtruj wyniki na podstawie wartości wprowadzonej przez użytkownika
         if self.q:
             qs = qs.filter(foreign_id__icontains=self.q)
@@ -1487,6 +1760,11 @@ class MSShelfMarkAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
         # Pobierz unikalne wartości pola foreign_id, które nie są puste
         qs = Manuscripts.objects.exclude(shelf_mark__isnull=True).exclude(shelf_mark__exact='').values('shelf_mark').distinct()
+
+        projectId = self.request.GET.get('project_id', None)
+        if projectId:
+            qs = qs.filter(ms_projects__project__id=projectId)
+        qs = qs.filter(display_as_main=True)
 
         # Filtruj wyniki na podstawie wartości wprowadzonej przez użytkownika
         if self.q:
@@ -1543,7 +1821,7 @@ class MSDatingAutocomplete(autocomplete.Select2QuerySetView):
 class MSPlaceOfOriginsAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
         # Pobierz wszystkie unikalne contemporary_repository_place
-        qs = Places.objects.exclude(manuscripts_origin__place_of_origins=None).distinct()
+        qs = Places.objects.exclude(manuscripts_origin__place_of_origin=None).distinct()
         # Filtrowanie wyników na podstawie wprowadzonego zapytania (self.q)
         if self.q:
             # Tworzymy listę warunków dla filtrowania po dowolnym polu
@@ -1559,7 +1837,26 @@ class MSPlaceOfOriginsAutocomplete(autocomplete.Select2QuerySetView):
 
     def get_result_label(self, item):
         # Zwróć etykietę wyniku jako str() z obiektu Places
-        return str(item)
+        name = ''
+
+        if item.city_historic_eng:
+            name+=item.city_historic_eng
+        elif item.city_today_eng:
+            name+= item.city_today_eng
+
+        if item.repository_historic_eng:
+            if len(name)>1:
+                name+=', '
+            name+=item.repository_historic_eng
+        elif item.repository_today_eng:
+            if len(name)>1:
+                name+=', '
+            name+=item.repository_today_eng
+
+        if len(name)<1:
+            name = str(item)
+
+        return name
 
 class MSMainScriptAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
@@ -1648,6 +1945,83 @@ class ColoursAutocomplete(autocomplete.Select2QuerySetView):
 
         return qs
 
+class CharacteristicsAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        if not self.request.user.is_authenticated:
+            return Characteristics.objects.none()
+
+        qs = Characteristics.objects.all()
+
+        if self.q:
+            qs = qs.filter(name__icontains=self.q)
+
+        return qs
+
+#################################
+class DecorationTypeAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        if not self.request.user.is_authenticated:
+            return DecorationTypes.objects.none()
+
+        qs = DecorationTypes.objects.all()
+        qs = qs.filter(parent_type__isnull=True)
+
+        if self.q:
+            qs = qs.filter(name__icontains=self.q)
+
+        return qs
+
+class DecorationSubtypeAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        if not self.request.user.is_authenticated:
+            return DecorationTypes.objects.none()
+
+        qs = DecorationTypes.objects.all()
+        qs = qs.filter(parent_type__isnull=False)
+
+        if self.q:
+            qs = qs.filter(name__icontains=self.q)
+
+        return qs
+
+class DecorationTechniquesAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        if not self.request.user.is_authenticated:
+            return DecorationTechniques.objects.none()
+
+        qs = DecorationTechniques.objects.all()
+
+        if self.q:
+            qs = qs.filter(name__icontains=self.q)
+
+        return qs
+
+class DecorationOrnamentedTextAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return Decoration.objects.none()
+
+        # Get distinct ornamented_text values        
+        qs = Decoration.objects.exclude(ornamented_text__isnull=True).exclude(ornamented_text__exact='').values('ornamented_text').distinct()
+
+        # Filter by ornamented_text if there's a search query
+        if self.q:
+            qs = qs.filter(ornamented_text__icontains=self.q)
+
+        return qs
+
+
+    def get_result_value(self, item):
+        return str(item['ornamented_text'])
+
+    def get_result_label(self, item):
+        return str(item['ornamented_text'])
+
+######################################
 class ScriptNamesAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
         # Don't forget to filter out results depending on the visitor !
@@ -1699,7 +2073,58 @@ class BindingMaterialsAutocomplete(autocomplete.Select2QuerySetView):
             qs = qs.filter(name__icontains=self.q)
 
         return qs
-    
+
+class BindingDecorationTypeAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        if not self.request.user.is_authenticated:
+            return BindingDecorationTypes.objects.none()
+
+        qs = BindingDecorationTypes.objects.all()
+
+        if self.q:
+            qs = qs.filter(name__icontains=self.q)
+
+        return qs
+
+class BindingComponentsAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        if not self.request.user.is_authenticated:
+            return BindingComponents.objects.none()
+
+        qs = BindingComponents.objects.all()
+
+        if self.q:
+            qs = qs.filter(name__icontains=self.q)
+
+        return qs
+
+class BindingCategoryAutocomplete(autocomplete.Select2ListView):
+    def get_list(self):
+        # Retrieve the choices dynamically from the Binding model
+        categories = Binding._meta.get_field('category').choices
+        
+        # If there's a query (self.q), filter the list of choices
+        if self.q:
+            return [category for category in categories if self.q.lower() in category[1].lower()]
+
+        # Return all categories if no query is provided
+        return categories
+
+    def get(self, request, *args, **kwargs):
+        # Get the filtered list of categories
+        categories = self.get_list()
+
+        # Format the choices as required by Select2 (id, text)
+        results = [{"id": category[0], "text": category[1]} for category in categories]
+        
+        # Return the results as JSON response
+        return JsonResponse({
+            "results": results
+        })
+
+
 class BibliographyTitleAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
         # Don't forget to filter out results depending on the visitor !
@@ -1795,7 +2220,58 @@ class PlacesAutocomplete(autocomplete.Select2QuerySetView):
 
         return qs
 
-        
+
+class PlacesCountriesAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return Places.objects.none()
+
+        qs = Places.objects.all()
+
+        if self.q:
+            qs = qs.filter(
+                Q(country_today_eng__icontains=self.q) |
+                Q(country_today_local_language__icontains=self.q) |
+                Q(country_historic_eng__icontains=self.q) |
+                Q(country_historic_local_language__icontains=self.q) |
+                Q(country_historic_latin__icontains=self.q)
+            )
+
+        # Group by the country fields to get unique results
+        qs = qs.values(
+            'country_today_eng'
+        ).distinct()
+
+        return qs
+
+    def get_result_label(self, item):
+        # Adjusting to handle dictionaries returned by `values()`
+        if item.get('country_today_eng'):
+            return item['country_today_eng']
+        if item.get('country_today_local_language'):
+            return item['country_today_local_language']
+        if item.get('country_historic_eng'):
+            return item['country_historic_eng']
+        if item.get('country_historic_local_language'):
+            return item['country_historic_local_language']
+        if item.get('country_historic_latin'):
+            return item['country_historic_latin']
+
+        return '-'
+
+    def get_result_value(self, item):
+        # Use country_today_eng as the unique identifier for the value
+        return item.get('country_today_eng') or item.get('country_today_local_language') or \
+               item.get('country_historic_eng') or item.get('country_historic_local_language') or \
+               item.get('country_historic_latin')
+
+    def get_selected_result_label(self, item):
+        # Use the same logic as get_result_label for the selected value
+        return self.get_result_label(item)
+
+
+
+        return '-'
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ContentImportView(View):
@@ -2008,17 +2484,17 @@ class ManuscriptsImportView(View):
                 print('contemporary repository place in row:')
                 print(row['contemporary_repository_place'])                
 
-                print('place_of_origins in row:')
-                print(row['place_of_origins'])   
+                print('place_of_origin in row:')
+                print(row['place_of_origin'])   
 
-                if row['place_of_origins']:
-                    new_place_of_origins = self.get_id_by_name('Places', row.get('place_of_origins'), 'repository_today_eng')
-                    if new_place_of_origins == None and row['place_of_origins'] != None :
-                        return JsonResponse({'info': 'error: could not find value "'+row['place_of_origins']+'" in table Places'}, status=200)
-                    row['place_of_origins'] = new_place_of_origins 
+                if row['place_of_origin']:
+                    new_place_of_origin = self.get_id_by_name('Places', row.get('place_of_origin'), 'repository_today_eng')
+                    if new_place_of_origin == None and row['place_of_origin'] != None :
+                        return JsonResponse({'info': 'error: could not find value "'+row['place_of_origin']+'" in table Places'}, status=200)
+                    row['place_of_origin'] = new_place_of_origin 
                 
-                print('place_of_origins in row:')
-                print(row['place_of_origins'])   
+                print('place_of_origin in row:')
+                print(row['place_of_origin'])   
 
                 if row['main_script']:
                     new_main_script = self.get_id_by_name('ScriptNames', row.get('main_script'), 'name')
@@ -2078,8 +2554,8 @@ class ManuscriptsImportView(View):
                     common_name = row.get('common_name'),
                     dating_id = row.get('dating'),
                     dating_comment = row.get('dating_comment'),
-                    place_of_origins_id = row.get('place_of_origins'),
-                    place_of_origins_comment = row.get('place_of_origins_comment'),
+                    place_of_origin_id = row.get('place_of_origin'),
+                    place_of_origin_comment = row.get('place_of_origin_comment'),
                     main_script_id = row.get('main_script'),
                     how_many_columns_mostly = row.get('how_many_columns_mostly'),
                     lines_per_page_usually =  row.get('lines_per_page_usually'),
@@ -3295,11 +3771,11 @@ class ManuscriptTEIView(View):
             orig_date_element.set("notAfter", str(manuscript.dating.year_to))
             orig_date_element.text = manuscript.dating.time_description
 
-        if manuscript.place_of_origins:
+        if manuscript.place_of_origin:
             orig_place_element = SubElement(dating_element, "origPlace")
             country_element = SubElement(orig_place_element, "country")
-            country_element.set("key", "place_" + str(manuscript.place_of_origins.id))
-            country_element.text = str(manuscript.place_of_origins)
+            country_element.set("key", "place_" + str(manuscript.place_of_origin.id))
+            country_element.text = str(manuscript.place_of_origin)
 
 
         if codicology:
@@ -3315,3 +3791,39 @@ class ManuscriptTEIView(View):
 
         xml_content = xml_header + tostring(root, encoding="unicode")  
         return HttpResponse(xml_content, content_type="application/xml")
+
+class ManuscriptTEI(TemplateView):
+    template_name = 'manuscript.xml'  # Path to your template
+
+    def get(self, request, *args, **kwargs):
+        # Get ms_id from the GET parameters
+        ms_id = request.GET.get('ms')
+
+        # Retrieve manuscript from the database or return 404 if not found
+        manuscript = get_object_or_404(Manuscripts, id=ms_id)
+
+        medieval_hands = manuscript.ms_hands.filter(is_medieval=True)
+        added_hands = manuscript.ms_hands.filter(is_medieval=False)
+
+        # Render the XML template with the manuscript data
+        context = self.get_context_data(manuscript=manuscript)
+        context['medieval_hands'] = medieval_hands
+        context['added_hands'] = added_hands
+
+        xml_content = render_to_string(self.template_name, context)
+
+        # Prepare the response as XML
+        response = HttpResponse(xml_content, content_type="application/xml")
+        
+        #Uncomment for download:
+        #response['Content-Disposition'] = f'attachment; filename="manuscript_{ms_id}.xml"'
+        response['Content-Disposition'] = 'inline'  # Display inline instead of downloading
+
+
+        return response
+
+    # Optionally, you can override get_context_data to provide context
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['manuscript'] = kwargs['manuscript']
+        return context

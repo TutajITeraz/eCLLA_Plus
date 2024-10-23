@@ -10,19 +10,22 @@ manuscripts_init = function()
 
     const newLeftWidth = 300;
 
-    leftColumn.style.width = `${newLeftWidth}px`;
-    rightColumn.style.width = `calc(100% - 305px)`;
-    resizer.style.left =`${newLeftWidth}px`;
+    // leftColumn.style.width = `${newLeftWidth}px`;
+    // rightColumn.style.width = `calc(100% - 305px)`;
+    // resizer.style.left =`${newLeftWidth}px`;
+
+    let clearingAllFieldsInProgress = false;
 
     function processFilters(e)
     {
-        manuscripts_table.ajax.reload();
+        if(!clearingAllFieldsInProgress)
+            manuscripts_table.ajax.reload();
     }
 
 
     $('#ms_name_select').select2({
         ajax: {
-            url: pageRoot+'/manuscripts-autocomplete/',
+            url: pageRoot+'/manuscripts-autocomplete-main/?project_id='+projectId,
             dataType: 'json',
             xhrFields: {
                 withCredentials: true
@@ -37,7 +40,7 @@ manuscripts_init = function()
 
     $('#ms_foreign_id_select').select2({
         ajax: {
-            url: pageRoot+'/ms-foreign-id-autocomplete/',
+            url: pageRoot+'/ms-foreign-id-autocomplete/?project_id='+projectId,
             dataType: 'json',
             xhrFields: {
                 withCredentials: true
@@ -70,7 +73,7 @@ manuscripts_init = function()
     // ms_shelfmark_select 'ms-shelf-mark-autocomplete/
     $('#ms_shelfmark_select').select2({
         ajax: {
-            url: pageRoot+'/ms-shelf-mark-autocomplete/',
+            url: pageRoot+'/ms-shelf-mark-autocomplete/?project_id='+projectId,
             dataType: 'json',
             xhrFields: {
                 withCredentials: true
@@ -97,8 +100,8 @@ manuscripts_init = function()
     });
     $('#ms_dating_select').on('select2:select', processFilters);
     */
-    // ms_place_of_origins_select ms-place-of-origins-autocomplete/
-    $('#ms_place_of_origins_select').select2({
+    // ms_place_of_origin_select ms-place-of-origins-autocomplete/
+    $('#ms_place_of_origin_select').select2({
         ajax: {
             url: pageRoot+'/ms-place-of-origins-autocomplete/',
             dataType: 'json',
@@ -110,7 +113,7 @@ manuscripts_init = function()
           allowClear: true,
           placeholder: '',
     });
-    $('#ms_place_of_origins_select').on('select2:select', processFilters);
+    $('#ms_place_of_origin_select').on('select2:select', processFilters);
 
     // ms_main_script_select ms-main-script-autocomplete/
     /*
@@ -273,6 +276,48 @@ manuscripts_init = function()
     });
     //$('#binding_material_select').on('select2:select', processFilters);
 
+    $('#binding_decoration_select').select2({
+        ajax: {
+            url: pageRoot+'/binding-decoration-type-autocomplete/',
+            dataType: 'json',
+            xhrFields: {
+                withCredentials: true
+           }
+            // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
+          },
+          allowClear: true,
+          placeholder: '',
+    });
+    //$('#binding_decoration_select').on('select2:select', processFilters);
+
+    $('#binding_components_select').select2({
+        ajax: {
+            url: pageRoot+'/binding-components-autocomplete/',
+            dataType: 'json',
+            xhrFields: {
+                withCredentials: true
+           }
+            // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
+          },
+          allowClear: true,
+          placeholder: '',
+    });
+    //$('#binding_components_select').on('select2:select', processFilters);
+
+    $('#binding_category_select').select2({
+        ajax: {
+            url: pageRoot+'/binding-category-autocomplete/',
+            dataType: 'json',
+            xhrFields: {
+                withCredentials: true
+           }
+            // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
+          },
+          allowClear: true,
+          placeholder: '',
+    });
+    //$('#binding_category_select').on('select2:select', processFilters);
+
 
     $('#formula_select').select2({
         ajax: {
@@ -307,6 +352,19 @@ manuscripts_init = function()
     $('#provenance_place_select').select2({
         ajax: {
             url: pageRoot+'/places-autocomplete/',
+            dataType: 'json',
+            xhrFields: {
+                withCredentials: true
+           }
+            // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
+          },
+          allowClear: true,
+          placeholder: '',
+    });
+
+    $('#provenance_place_countries_select').select2({
+        ajax: {
+            url: pageRoot+'/places-countries-autocomplete/',
             dataType: 'json',
             xhrFields: {
                 withCredentials: true
@@ -376,6 +434,106 @@ manuscripts_init = function()
           placeholder: '',
     });
 
+
+    /////////////////////////// DECORATION SELECT //////////////////////////////
+    $('#decoration_type_select').select2({
+        ajax: {
+            url: pageRoot+'/decoration-type-autocomplete/',
+            dataType: 'json',
+            xhrFields: {
+                withCredentials: true
+           }
+          },
+          allowClear: true,
+          placeholder: '',
+    });
+    $('#decoration_subtype_select').select2({
+        ajax: {
+            url: pageRoot+'/decoration-subtype-autocomplete/',
+            dataType: 'json',
+            xhrFields: {
+                withCredentials: true
+           }
+          },
+          allowClear: true,
+          placeholder: '',
+    });
+    $('#technique_select').select2({
+        ajax: {
+            url: pageRoot+'/decoration-techniques-autocomplete/',
+            dataType: 'json',
+            xhrFields: {
+                withCredentials: true
+           }
+          },
+          allowClear: true,
+          placeholder: '',
+    });
+    $('#ornamented_text_select').select2({
+        ajax: {
+            url: pageRoot+'/decoration-ornamented_text-autocomplete/',
+            dataType: 'json',
+            xhrFields: {
+                withCredentials: true
+           }
+          },
+          allowClear: true,
+          placeholder: '',
+    });
+    $('#decoration_subject_select').select2({
+        ajax: {
+            url: pageRoot+'/subject-autocomplete/',
+            dataType: 'json',
+            xhrFields: {
+                withCredentials: true
+           }
+          },
+          allowClear: true,
+          placeholder: '',
+    });
+    $('#decoration_colours_select').select2({
+        ajax: {
+            url: pageRoot+'/colours-autocomplete/',
+            dataType: 'json',
+            xhrFields: {
+                withCredentials: true
+           }
+          },
+          allowClear: true,
+          placeholder: '',
+    });
+    $('#decoration_characteristics_select').select2({
+        ajax: {
+            url: pageRoot+'/characteristics-autocomplete/',
+            dataType: 'json',
+            xhrFields: {
+                withCredentials: true
+           }
+          },
+          allowClear: true,
+          placeholder: '',
+    });
+
+    
+    //explicitly added options:
+    $('#location_on_the_page_select').select2({
+          allowClear: true,
+          placeholder: '',
+    });
+    $('#monochrome_or_colour_select').select2({
+        allowClear: true,
+        placeholder: '',
+    });
+    $('#size_characteristic_select').select2({
+        allowClear: true,
+        placeholder: '',
+    });
+    $('#original_or_added_select').select2({
+        allowClear: true,
+        placeholder: '',
+    });
+
+
     //Unselecting:
 
     $('select').on('select2:unselecting', function() {
@@ -391,6 +549,8 @@ manuscripts_init = function()
 
     // Function to clear form fields
     function clearFields() {
+
+        clearingAllFieldsInProgress = true;
         // Clear all input fields
         $('input').each(function() {
             if ($(this).attr('type') !== 'checkbox' && $(this).attr('type') !== 'radio') {
@@ -405,6 +565,8 @@ manuscripts_init = function()
             $(this).val("").change(); // Clear Select2 value and trigger change event
         });
 
+        clearingAllFieldsInProgress = false;
+
         processFilters(); 
     }
     
@@ -414,8 +576,121 @@ manuscripts_init = function()
         clearFields();
     });
 
-    $('#ms_how_many_columns_min').on( "change", processFilters );
-    $('#ms_how_many_columns_max').on( "change", processFilters );
+    // function setTableHeight() {
+    //     var windowHeight = $(window).height();
+    //     var windowWidth = $(window).width();
+    //     if(windowWidth > 768){
+    //         var tableHeight = windowHeight - 510;
+    //     } else {
+    //         var tableHeight = windowHeight - 650;
+    //     }
+        
+    //     // $('#manuscripts').css('height', tableHeight + 'px');
+    //     // console.log('table height : ', tableHeight);
+    // }
+
+    // // Set initial height
+    // setTableHeight();
+
+    // Adjust height on window resize
+    $(window).resize(function() {
+        // setTableHeight();
+
+        var windowWidth = $(window).width();
+
+        if(windowWidth < 768){
+            $("#manuscripts_wrapper .dt-layout-row").eq(0).css({
+                "position": "sticky",
+                "top": "88px",
+                "background": "#fff7f1",
+                "z-index": "20",
+            });
+        } else if (windowWidth < 1280){
+            $("#manuscripts_wrapper .dt-layout-row").eq(0).css({
+                "position": "sticky",
+                "top": "68px",
+                "background": "#fff7f1",
+                "z-index": "20",
+            });
+        } else {
+            $("#manuscripts_wrapper .dt-layout-row").eq(0).css({
+                "position": "sticky",
+                "top": "48px",
+                "background": "#fff7f1",
+                "z-index": "20",
+            });
+        }
+        // Apply CSS to the first dt-layout-row
+    
+        // Apply CSS to the second dt-layout-row
+        // $("#manuscripts_wrapper .dt-layout-row").eq(1).css({
+        //     "background-color": "lightgreen",
+        //     "margin-top": "20px",
+        //     "border": "2px solid green"
+        // });
+    
+        // Apply CSS to the third dt-layout-row
+        $("#manuscripts_wrapper .dt-layout-row").eq(2).css({
+            "position": "sticky",
+            "bottom": "0px",
+            "background": "#fff7f1",
+            "z-index": "20",
+        });
+    });
+
+
+    $(document).ready(function() {
+        clearFields();
+        
+        // setTableHeight();
+
+        var windowWidth = $(window).width();
+
+        if(windowWidth < 768){
+            $("#manuscripts_wrapper .dt-layout-row").eq(0).css({
+                "position": "sticky",
+                "top": "88px",
+                "background": "#fff7f1",
+                "z-index": "20",
+            });
+        } else if (windowWidth < 1280){
+            $("#manuscripts_wrapper .dt-layout-row").eq(0).css({
+                "position": "sticky",
+                "top": "68px",
+                "background": "#fff7f1",
+                "z-index": "20",
+            });
+        } else {
+            $("#manuscripts_wrapper .dt-layout-row").eq(0).css({
+                "position": "sticky",
+                "top": "48px",
+                "background": "#fff7f1",
+                "z-index": "20",
+            });
+        }
+        // Apply CSS to the first dt-layout-row
+    
+        // Apply CSS to the second dt-layout-row
+        // $("#manuscripts_wrapper .dt-layout-row").eq(1).css({
+        //     "background-color": "lightgreen",
+        //     "margin-top": "20px",
+        //     "border": "2px solid green"
+        // });
+    
+        // Apply CSS to the third dt-layout-row
+        $("#manuscripts_wrapper .dt-layout-row").eq(2).css({
+            "position": "sticky",
+            "bottom": "0px",
+            "background": "#fff7f1",
+            "z-index": "20",
+        });
+    });
+
+    //$('#ms_how_many_columns_min').on( "change", processFilters );
+    //$('#ms_how_many_columns_max').on( "change", processFilters );
+    $('#ms_how_many_columns1').on( "change", processFilters );
+    $('#ms_how_many_columns2').on( "change", processFilters );
+    $('#ms_how_many_columns3').on( "change", processFilters );
     $('#ms_lines_per_page_min').on( "change", processFilters );
     $('#ms_lines_per_page_max').on( "change", processFilters );
     $('#ms_how_many_quires_min').on( "change", processFilters );
@@ -438,21 +713,25 @@ manuscripts_init = function()
     $('#number_of_parchment_folios_max').on("change", processFilters);
     $('#ms_binding_date_min').on("change", processFilters);
     $('#ms_binding_date_max').on("change", processFilters);
+    $('#ms_binding_date_years_min').on("change", processFilters);
+    $('#ms_binding_date_years_max').on("change", processFilters);
     $('#foliation').on( "change", processFilters );
     $('#pagination').on( "change", processFilters );
 
-    $('#display_as_main_true').on( "change", processFilters );
-    $('#display_as_main_false').on( "change", processFilters );
+    //$('#display_as_main_true').on( "change", processFilters );
+    //$('#display_as_main_false').on( "change", processFilters );
 
     $('#paper_leafs_true').on("change", processFilters);
     $('#parchment_thickness_min').on("change", processFilters);
     $('#parchment_colour_select').on("change", processFilters);
-    $('#page_size_wh_min').on("change", processFilters);
+    $('#page_size_w_min').on("change", processFilters);
+    $('#page_size_h_min').on("change", processFilters);
     $('#main_script_select').on("change", processFilters);
     $('#watermarks_true').on("change", processFilters);
     $('#type_of_the_quire_select').on("change", processFilters);
     $('#script_name_select').on("change", processFilters);
     $('#is_main_text_true').on("change", processFilters);
+    $('#is_hand_identified_true').on("change", processFilters);
     $('#ms_how_many_hands_min').on("change", processFilters);
     $('#distance_between_horizontal_ruling_min').on("change", processFilters);
     $('#distance_between_vertical_ruling_min').on("change", processFilters);
@@ -469,28 +748,55 @@ manuscripts_init = function()
     $('#binding_type_select').on("change", processFilters);
     $('#binding_style_select').on("change", processFilters);
     $('#binding_material_select').on("change", processFilters);
+    $('#binding_decoration_select').on("change", processFilters);
+    $('#binding_components_select').on("change", processFilters);
+    $('#binding_category_select').on("change", processFilters);
     $('#formula_select').on("change", processFilters);
     $('#rite_select').on("change", processFilters);
     $('#binding_decoration_true').on("change", processFilters);
     $('#damage_select').on("change", processFilters);
     $('#parchment_shrinkage_true').on("change", processFilters);
-    $('#illegible_text_fragments_true').on("change", processFilters);
+    $('#illegible_text_true').on("change", processFilters);
     $('#ink_corrosion_true').on("change", processFilters);
     $('#copper_corrosion_true').on("change", processFilters);
     $('#powdering_or_cracking_paint_layer_true').on("change", processFilters);
     $('#conservation_true').on("change", processFilters);
     $('#provenance_place_select').on("change", processFilters);
+    $('#provenance_place_countries_select').on("change", processFilters);
     $('#title_select').on("change", processFilters);
     $('#author_select').on("change", processFilters);
     $('#clla_liturgical_genre_select').on("change", processFilters);
     $('#clla_provenance_place_select').on("change", processFilters);
 
+    $('#original_or_added_select').on("change", processFilters);
+    $('#location_on_the_page_select').on("change", processFilters);
+    $('#decoration_type_select').on("change", processFilters);
+    $('#decoration_subtype_select').on("change", processFilters);
+    $('#size_characteristic_select').on("change", processFilters);
+    $('#monochrome_or_colour_select').on("change", processFilters);
+    $('#technique_select').on("change", processFilters);
+    $('#ornamented_text_select').on("change", processFilters);
+    $('#decoration_subject_select').on("change", processFilters);
+    $('#decoration_colours_select').on("change", processFilters);
+    $('#decoration_characteristics_select').on("change", processFilters);
+
+    $('#decoration_size_height_min').on("change", processFilters);
+    $('#decoration_size_height_max').on("change", processFilters);
+    $('#decoration_size_width_min').on("change", processFilters);
+    $('#decoration_size_width_max').on("change", processFilters);
+    $('#decoration_addition_date_min').on("change", processFilters);
+    $('#decoration_addition_date_max').on("change", processFilters);
+    $('#decoration_addition_date_years_min').on("change", processFilters);
+    $('#decoration_addition_date_years_max').on("change", processFilters);
+
 
     $('#paper_leafs_false').on("change", processFilters);
     $('#parchment_thickness_max').on("change", processFilters);
-    $('#page_size_wh_max').on("change", processFilters);
+    $('#page_size_w_max').on("change", processFilters);
+    $('#page_size_h_max').on("change", processFilters);
     $('#watermarks_false').on("change", processFilters);
     $('#is_main_text_false').on("change", processFilters);
+    $('#is_hand_identified_false').on("change", processFilters);
     $('#ms_how_many_hands_max').on("change", processFilters);
     $('#distance_between_horizontal_ruling_max').on("change", processFilters);
     $('#distance_between_vertical_ruling_max').on("change", processFilters);
@@ -501,7 +807,7 @@ manuscripts_init = function()
     $('#binding_width_max').on("change", processFilters);
     $('#binding_decoration_false').on("change", processFilters);
     $('#parchment_shrinkage_false').on("change", processFilters);
-    $('#illegible_text_fragments_false').on("change", processFilters);
+    $('#illegible_text_false').on("change", processFilters);
     $('#ink_corrosion_false').on("change", processFilters);
     $('#copper_corrosion_false').on("change", processFilters);
     $('#powdering_or_cracking_paint_layer_false').on("change", processFilters);
@@ -511,6 +817,14 @@ manuscripts_init = function()
 
     $('#rite_name_from_ms').on("change", processFilters);
 
+    $('#darkening_true').on("change", processFilters);
+    $('#darkening_false').on("change", processFilters);
+    $('#water_staining_true').on("change", processFilters);
+    $('#water_staining_false').on("change", processFilters);
+    $('#historic_repairs_true').on("change", processFilters);
+    $('#historic_repairs_false').on("change", processFilters);
+
+
     var getFilterData = function(d)
     {    
         d.name = $('#ms_name_select').select2('data').map(item => item.id).join(';');
@@ -518,11 +832,12 @@ manuscripts_init = function()
         d.contemporary_repository_place = $('#ms_contemporary_repository_place_select').select2('data').map(item => item.id).join(';');
         d.shelfmark = $('#ms_shelfmark_select').select2('data').map(item => item.id).join(';');
         //jd.dating = $('#ms_dating_select').select2('data').map(item => item.id).join(';');
-        d.place_of_origins = $('#ms_place_of_origins_select').select2('data').map(item => item.id).join(';');
+        d.place_of_origin = $('#ms_place_of_origin_select').select2('data').map(item => item.id).join(';');
         //d.main_script = $('#ms_main_script_select').select2('data').map(item => item.id).join(';');
         //d.binding_date = $('#ms_binding_date_select').select2('data').map(item => item.id).join(';');
-        d.how_many_columns_min = $('#ms_how_many_columns_min').val();
-        d.how_many_columns_max = $('#ms_how_many_columns_max').val();
+        //d.how_many_columns_min = $('#ms_how_many_columns_min').val();
+        //d.how_many_columns_max = $('#ms_how_many_columns_max').val();
+        d.how_many_columns = [$('#ms_how_many_columns1').is(":checked") ? '1' : '', $('#ms_how_many_columns2').is(":checked") ? '2' : '', $('#ms_how_many_columns3').is(":checked") ? '3' : ''].filter(Boolean).join(';');
         d.lines_per_page_min = $('#ms_lines_per_page_min').val();
         d.lines_per_page_max = $('#ms_lines_per_page_max').val();
         d.how_many_quires_min = $('#ms_how_many_quires_min').val();
@@ -540,16 +855,18 @@ manuscripts_init = function()
         d.dating_max = $('#ms_dating_max').val();
         //d.dating_years_min = $('#ms_dating_years_min').val();
         //d.dating_years_max = $('#ms_dating_years_max').val();
-        //d.clla_dating_max = $('#clla_dating_max').val();
-        //d.clla_dating_years_min = $('#clla_dating_years_min').val();
-        //d.clla_dating_min = $('#clla_dating_min').val();
-        //d.clla_dating_years_max = $('#clla_dating_years_max').val();
+        d.clla_dating_max = $('#clla_dating_max').val();
+        d.clla_dating_years_min = $('#clla_dating_years_min').val();
+        d.clla_dating_min = $('#clla_dating_min').val();
+        d.clla_dating_years_max = $('#clla_dating_years_max').val();
 
         d.number_of_parchment_folios_min = $('#number_of_parchment_folios_min').val();
         d.number_of_parchment_folios_max = $('#number_of_parchment_folios_max').val();
 
         d.binding_date_min = $('#ms_binding_date_min').val();
         d.binding_date_max = $('#ms_binding_date_max').val();
+        d.binding_date_years_min = $('#ms_binding_date_years_min').val();
+        d.binding_date_years_max = $('#ms_binding_date_years_max').val();
 
         //New min/max:
         d.binding_height_min = $('#binding_height_min').val();
@@ -559,7 +876,8 @@ manuscripts_init = function()
         d.distance_between_horizontal_ruling_min = $('#distance_between_horizontal_ruling_min').val();
         d.distance_between_vertical_ruling_min = $('#distance_between_vertical_ruling_min').val();
         d.ms_how_many_hands_min = $('#ms_how_many_hands_min').val();
-        d.page_size_wh_min = $('#page_size_wh_min').val();
+        d.page_size_w_min = $('#page_size_w_min').val();
+        d.page_size_h_min = $('#page_size_h_min').val();
         d.parchment_thickness_min = $('#parchment_thickness_min').val();
         d.binding_height_max = $('#binding_height_max').val();
         d.binding_width_max = $('#binding_width_max').val();
@@ -568,9 +886,9 @@ manuscripts_init = function()
         d.distance_between_horizontal_ruling_max = $('#distance_between_horizontal_ruling_max').val();
         d.distance_between_vertical_ruling_max = $('#distance_between_vertical_ruling_max').val();
         d.ms_how_many_hands_max = $('#ms_how_many_hands_max').val();
-        d.page_size_wh_max = $('#page_size_wh_max').val();
+        d.page_size_w_max = $('#page_size_w_max').val();
+        d.page_size_h_max = $('#page_size_h_max').val();
         d.parchment_thickness_max = $('#parchment_thickness_max').val();
-        d.page_size_wh_max = $('#page_size_wh_max').val();
         d.block_size_min = $('#block_size_min').val();
         d.block_size_max = $('#block_size_max').val();
 
@@ -578,10 +896,11 @@ manuscripts_init = function()
         d.paper_leafs_true = $('#paper_leafs_true').is(':checked');
         d.watermarks_true = $('#watermarks_true').is(':checked');
         d.is_main_text_true = $('#is_main_text_true').is(':checked');
+        d.is_hand_identified_true = $('#is_hand_identified_true').is(':checked');
         d.written_above_the_top_line_true = $('#written_above_the_top_line_true').is(':checked');
         d.binding_decoration_true = $('#binding_decoration_true').is(':checked');
         d.parchment_shrinkage_true = $('#parchment_shrinkage_true').is(':checked');
-        d.illegible_text_fragments_true = $('#illegible_text_fragments_true').is(':checked');
+        d.illegible_text_true = $('#illegible_text_true').is(':checked');
         d.ink_corrosion_true = $('#ink_corrosion_true').is(':checked');
         d.copper_corrosion_true = $('#copper_corrosion_true').is(':checked');
         d.powdering_or_cracking_paint_layer_true = $('#powdering_or_cracking_paint_layer_true').is(':checked');
@@ -589,15 +908,22 @@ manuscripts_init = function()
         d.paper_leafs_false = $('#paper_leafs_false').is(':checked');
         d.watermarks_false = $('#watermarks_false').is(':checked');
         d.is_main_text_false = $('#is_main_text_false').is(':checked');
+        d.is_hand_identified_false = $('#is_hand_identified_false').is(':checked');
         d.written_above_the_top_line_false = $('#written_above_the_top_line_false').is(':checked');
         d.binding_decoration_false = $('#binding_decoration_false').is(':checked');
         d.parchment_shrinkage_false = $('#parchment_shrinkage_false').is(':checked');
-        d.illegible_text_fragments_false = $('#illegible_text_fragments_false').is(':checked');
+        d.illegible_text_false = $('#illegible_text_false').is(':checked');
         d.ink_corrosion_false = $('#ink_corrosion_false').is(':checked');
         d.copper_corrosion_false = $('#copper_corrosion_false').is(':checked');
         d.powdering_or_cracking_paint_layer_false = $('#powdering_or_cracking_paint_layer_false').is(':checked');
         d.conservation_false = $('#conservation_false').is(':checked');
-        
+
+        d.darkening_true = $('#darkening_true').is(':checked');
+        d.darkening_false = $('#darkening_false').is(':checked');
+        d.water_staining_true = $('#water_staining_true').is(':checked');
+        d.water_staining_false = $('#water_staining_false').is(':checked');        
+        d.historic_repairs_true = $('#historic_repairs_true').is(':checked');
+        d.historic_repairs_false = $('#historic_repairs_false').is(':checked');
 
         //New Select:
         d.parchment_colour_select = $('#parchment_colour_select').select2('data').map(item => item.id).join(';');
@@ -610,23 +936,54 @@ manuscripts_init = function()
         d.binding_type_select = $('#binding_type_select').select2('data').map(item => item.id).join(';');
         d.binding_style_select = $('#binding_style_select').select2('data').map(item => item.id).join(';');
         d.binding_material_select = $('#binding_material_select').select2('data').map(item => item.id).join(';');
+        d.binding_decoration_select = $('#binding_decoration_select').select2('data').map(item => item.id).join(';');
+        d.binding_components_select = $('#binding_components_select').select2('data').map(item => item.id).join(';');
+        d.binding_category_select = $('#binding_category_select').select2('data').map(item => item.id).join(';');
         d.formula_select = $('#formula_select').select2('data').map(item => item.id).join(';');
         d.rite_select = $('#rite_select').select2('data').map(item => item.id).join(';');
         d.damage_select = $('#damage_select').select2('data').map(item => item.id).join(';');
         d.provenance_place_select = $('#provenance_place_select').select2('data').map(item => item.id).join(';');
+        d.provenance_place_countries_select = $('#provenance_place_countries_select').select2('data').map(item => item.id).join(';');
         d.title_select = $('#title_select').select2('data').map(item => item.id).join(';');
         //Special case (authors does not have .id)
         d.author_select = $('#author_select').select2('data').map(item => item.text).join(';');
 
-        //d.clla_liturgical_genre_select = $('#clla_liturgical_genre_select').select2('data').map(item => item.text).join(';');
-        //d.clla_provenance_place_select = $('#clla_provenance_place_select').select2('data').map(item => item.text).join(';');
+        d.clla_liturgical_genre_select = $('#clla_liturgical_genre_select').select2('data').map(item => item.text).join(';');
+        d.clla_provenance_place_select = $('#clla_provenance_place_select').select2('data').map(item => item.text).join(';');
+
+
+
+        d.original_or_added_select = $('#original_or_added_select').select2('data').map(item => item.id).join(';');
+        d.location_on_the_page_select = $('#location_on_the_page_select').select2('data').map(item => item.id).join(';');
+        d.decoration_type_select = $('#decoration_type_select').select2('data').map(item => item.id).join(';');
+        d.decoration_subtype_select = $('#decoration_subtype_select').select2('data').map(item => item.id).join(';');
+        d.size_characteristic_select = $('#size_characteristic_select').select2('data').map(item => item.id).join(';');
+        d.monochrome_or_colour_select = $('#monochrome_or_colour_select').select2('data').map(item => item.id).join(';');
+        d.technique_select = $('#technique_select').select2('data').map(item => item.id).join(';');
+        d.ornamented_text_select = $('#ornamented_text_select').select2('data').map(item => item.id).join(';');
+        d.decoration_subject_select = $('#decoration_subject_select').select2('data').map(item => item.id).join(';');
+        d.decoration_colours_select = $('#decoration_colours_select').select2('data').map(item => item.id).join(';');
+        d.decoration_characteristics_select = $('#decoration_characteristics_select').select2('data').map(item => item.id).join(';');
+
+        d.binding_date_years_max = $('#ms_binding_date_years_max').val();
+
+        
+        d.decoration_size_height_min = $('#decoration_size_height_min').val();
+        d.decoration_size_height_max = $('#decoration_size_height_max').val();
+        d.decoration_size_width_min = $('#decoration_size_width_min').val();
+        d.decoration_size_width_max = $('#decoration_size_width_max').val();
+        d.decoration_addition_date_min = $('#decoration_addition_date_min').val();
+        d.decoration_addition_date_max = $('#decoration_addition_date_max').val();
+        d.decoration_addition_date_years_min = $('#decoration_addition_date_years_min').val();
+        d.decoration_addition_date_years_max = $('#decoration_addition_date_years_max').val();
+        
 
         d.formula_text = $('#formula_text').val();
         d.rite_name_from_ms = $('#rite_name_from_ms').val();
-        //d.clla_no = $('#clla_no').val();
+        d.clla_no = $('#clla_no').val();
 
-        d.display_as_main_true = $('#display_as_main_true').is(':checked');
-        d.display_as_main_false = $('#display_as_main_false').is(':checked');
+        //d.display_as_main_true = $('#display_as_main_true').is(':checked');
+        //d.display_as_main_false = $('#display_as_main_false').is(':checked');
 
         d.projectId = projectId;
     }
@@ -656,28 +1013,71 @@ manuscripts_init = function()
         "pagingType": "full_numbers",
         "pageLength": 25,
         "columns": [
+            { 
+                "data": "image", "title": "Image", "width": "220px",
+                "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
+                    if(oData.image.length > 3)
+                        $(nTd).html("<img src='"+oData.image+"' style='max-heigth: 170px; max-width: 190px;'></img>");
+            }},
+
+            { 
+                "data": "name", "title": "Info",
+                "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
+                        let html = "<h3 class='ms_name'><a href=/static/page.html?p=manuscript&id="+oData.id+">"+oData.rism_id+" "+oData.name+"</a></h3>"
+                        +"<div class='left_script_content'>"
+                            +"<div class='ms_foreign_id'><span class='mspltext'> "+oData.contemporary_repository_place+':</span> '+oData.foreign_id+"<span class='mspltext'> ("+foreign_id_name+")</span>, "+oData.shelf_mark+"<span class='mspltext'> (Shelf mark)</span></div>"
+                            /*+"<div class='ms_contemporary_repository_place'><b>Contemporary repository place: </b>"+oData.contemporary_repository_place+"</div>"*/
+                            +"<div class='ms_dating'><b>Dating: </b>"+oData.dating+"</div>"
+                            +"<div class='ms_place_of_origin'><b>Place of origin: </b>"+oData.place_of_origin+"</div>"
+                            
+                            +"<div class='ms_place_of_origin'><b>Medieval provenance: </b>"+oData.ms_provenance+"</div>"
+                        +"</div>"
+
+                        /*+"<div class='ms_main_script'><b>Main script: </b>"+oData.main_script+"</div>"*/
+                        
+                        +"<div class='right_script_content'>"
+                            +"<div class='ms_folios'><span class='decorated_left'>Number of folios: </span><span class='decorated_right'>"+oData.folios_no+"</span></div>"
+                            +"<div class='ms_measurements'><span class='decorated_left'>Measurements: </span><span class='decorated_right'>"+oData.page_size_max_h+"mm x "+oData.page_size_max_w+"mm</span></div>"
+                            +"<div class='ms_main_script'><span class='decorated_left'>Main script: </span><span class='decorated_right'>"+oData.main_script+"</span></div>"
+
+                            +"<div class='ms_decorated'><span class='decorated_left'>Decorated: </span><span class='decorated_right'>"+oData.decorated+"</span></div>"
+                            +"<div class='ms_music_notation'><span class='decorated_left'>Music notation: </span><span class='decorated_right'>"+oData.music_notation+"</span></div>"
+                            +"<div class='ms_binding_date'><span class='decorated_left'>Binding date: </span><span class='decorated_right'>"+oData.binding_date+"</span></div>"
+
+                            /*
+                            +"<div class='ms_how_many_columns_mostly'><span class='decorated_left'>How many columns (mostly): </span><span class='decorated_right'>"+oData.how_many_columns_mostly+"</span></div>"
+                            +"<div class='ms_lines_per_page_usually'><span class='decorated_left'>Lines per page usually: </span><span class='decorated_right'>"+oData.lines_per_page_usually+"</span></div>"
+                            +"<div class='ms_how_many_quires'><span class='decorated_left'>How many quires: </span><span class='decorated_right'>"+oData.how_many_quires+"</span></div>"
+                            */
+                        +"</div>"
+                        
+                        ;
+
+                        $(nTd).html(html);
+            }},
+
             { "data": "id", "title": "ID", visible: false },
-            { "data": "name", "title": "Name",
+            /*{ "data": "name", "title": "Name",
             "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
                 $(nTd).html("<a href=/static/page.html?p=manuscript&id="+oData.id+">"+oData.name+"</a>");
-            }},
-            { "data": "image", "title": "Image",
-            "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
-                if(oData.image.length > 3)
-                    $(nTd).html("<img src='"+oData.image+"' style='max-heigth: 120px; max-width: 120px;'></img>");
-            }},
-            { "data": "foreign_id", "title": foreign_id_name },
-            { "data": "contemporary_repository_place", "title": "Contemporary Repository Place" },
-            { "data": "shelf_mark", "title": "Shelf Mark" },
-            { "data": "place_of_origins", "title": "Place of Origins" },
-            { "data": "dating", "title": "Dating" },
-            { "data": "main_script", "title": "Main Script" },
-            { "data": "how_many_columns_mostly", "title": "How Many Columns Mostly" },
-            { "data": "lines_per_page_usually", "title": "Lines per Page Usually" },
-            { "data": "how_many_quires", "title": "How Many Quires" },
-            { "data": "decorated", "title": "Decorated" },
-            { "data": "music_notation", "title": "Music Notation" },
-            { "data": "binding_date", "title": "Binding Date" }
+            }},*/
+            { "data": "rism_id", "title": "rism_id" , visible: false },
+            { "data": "ms_provenance", "title": "ms_provenance" , visible: false },
+            { "data": "folios_no", "title": "folios_no" , visible: false },
+            { "data": "page_size_max_h", "title": "page_size_max_h" , visible: false },
+            { "data": "page_size_max_w", "title": "page_size_max_w" , visible: false },
+            { "data": "foreign_id", "title": foreign_id_name , visible: false },
+            { "data": "contemporary_repository_place", "title": "Contemporary Repository Place" , visible: false },
+            { "data": "shelf_mark", "title": "Shelf Mark" , visible: false },
+            { "data": "place_of_origin", "title": "Place of origin" , visible: false },
+            { "data": "dating", "title": "Dating" , visible: false },
+            { "data": "main_script", "title": "Main Script" , visible: false },
+            /*{ "data": "how_many_columns_mostly", "title": "How Many Columns Mostly" , visible: false },
+            { "data": "lines_per_page_usually", "title": "Lines per Page Usually" , visible: false },
+            { "data": "how_many_quires", "title": "How Many Quires" , visible: false },*/
+            { "data": "decorated", "title": "Decorated" , visible: false },
+            { "data": "music_notation", "title": "Music Notation" , visible: false },
+            { "data": "binding_date", "title": "Binding Date" , visible: false }
             // Add more columns as needed
         ]
     });

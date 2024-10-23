@@ -62,7 +62,7 @@ class IommiAdmin(Admin):
         apps__indexerapp_contentfunctions__include = True
         apps__indexerapp_contributors__include = True
         apps__indexerapp_decoration__include = True
-        apps__indexerapp_decorationcharacteristics__include = True
+        apps__indexerapp_characteristics__include = True
         apps__indexerapp_decorationsubjects__include = True
         apps__indexerapp_decorationtechniques__include = True
         apps__indexerapp_decorationtypes__include = True
@@ -146,6 +146,7 @@ urlpatterns = [
     path('content-autocomplete/',views.ContentAutocomplete.as_view(),name='content-autocomplete'),
     path('rites-autocomplete/',views.RiteNamesAutocomplete.as_view(),name='rites-autocomplete'),
     path('manuscripts-autocomplete/',views.ManuscriptsAutocomplete.as_view(),name='manuscripts-autocomplete'),
+    path('manuscripts-autocomplete-main/',views.ManuscriptsAutocompleteMain.as_view(),name='manuscripts-autocomplete-main'),
     path('contributors-autocomplete/',views.ContributorsAutocomplete.as_view(),name='contributors-autocomplete'),
 
     path('clla-provenance-autocomplete/',views.CllaProvenanceAutocomplete.as_view(),name='clla-provenance-autocomplete'),
@@ -163,14 +164,28 @@ urlpatterns = [
     path('colours-autocomplete/',views.ColoursAutocomplete.as_view(),name='colours-autocomplete'),
     path('script-names-autocomplete/',views.ScriptNamesAutocomplete.as_view(),name='script-names-autocomplete'),
     path('places-autocomplete/',views.PlacesAutocomplete.as_view(),name='places-autocomplete'),
+    path('places-countries-autocomplete/',views.PlacesCountriesAutocomplete.as_view(),name='places-countries-autocomplete'),
+    path('characteristics-autocomplete/',views.CharacteristicsAutocomplete.as_view(),name='characteristics-autocomplete'),
+
     path('binding-types-autocomplete/',views.BindingTypesAutocomplete.as_view(),name='binding-types-autocomplete'),
     path('binding-styles-autocomplete/',views.BindingStylesAutocomplete.as_view(),name='binding-styles-autocomplete'),
     path('binding-materials-autocomplete/',views.BindingMaterialsAutocomplete.as_view(),name='binding-materials-autocomplete'),
+    path('binding-decoration-type-autocomplete/',views.BindingDecorationTypeAutocomplete.as_view(),name='binding-decoration-type-autocomplete/'),
+    path('binding-components-autocomplete/',views.BindingComponentsAutocomplete.as_view(),name='binding-components-autocomplete/'),
+    path('binding-category-autocomplete/',views.BindingCategoryAutocomplete.as_view(),name='binding-category-autocomplete/'),
+
     path('bibliography-title-autocomplete/',views.BibliographyTitleAutocomplete.as_view(),name='bibliography-title-autocomplete'),
     path('bibliography-author-autocomplete/',views.BibliographyAuthorAutocomplete.as_view(),name='bibliography-author-autocomplete'),
 
     path('ritenames-autocomplete/',views.RiteNamesAutocomplete.as_view(),name='ritenames-autocomplete'),
     path('formulas-autocomplete/',views.FormulasAutocomplete.as_view(),name='formulas-autocomplete'),
+
+    #New [ ]TODO:
+    path('decoration-type-autocomplete/',views.DecorationTypeAutocomplete.as_view(),name='decoration-type-autocomplete'),
+    path('decoration-subtype-autocomplete/',views.DecorationSubtypeAutocomplete.as_view(),name='decoration-subtype-autocomplete'),
+    #DecorationTechniques
+    path('decoration-techniques-autocomplete/',views.DecorationTechniquesAutocomplete.as_view(),name='decoration-techniques-autocomplete'),
+    path('decoration-ornamented_text-autocomplete/',views.DecorationOrnamentedTextAutocomplete.as_view(),name='decoration-ornamented_text-autocomplete'),
 
 
     #ajax:
@@ -220,6 +235,7 @@ urlpatterns = [
     path('iommi-admin/', include(IommiAdmin.urls())),
 
     path('ms_tei/',views.ManuscriptTEIView.as_view(), name='ms_tei'),
+    path('manuscript_tei/', views.ManuscriptTEI.as_view(), name='manuscript_tei_xml'),
 
 
     path('ms_music_notation/<int:pk>/', views.MSMusicNotationView.as_view(), name='ms_music_notation'),

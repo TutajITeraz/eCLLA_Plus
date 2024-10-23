@@ -160,3 +160,5 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+indexerapp/static/img/about/LiturgicaPoloniae.jpeg
+indexerapp/static/img/liturgica_poloniae_full_title_flat.svg

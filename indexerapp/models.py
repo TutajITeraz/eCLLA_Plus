@@ -61,13 +61,13 @@ class DecorationTechniques(models.Model):
     def __str__(self):
         return self.name
 
-class DecorationCharacteristics(models.Model):
+class Characteristics(models.Model):
     name = models.CharField(max_length=128)
 
     class Meta:
         #managed = False
-        db_table = 'decoration_characteristics'
-        verbose_name_plural = 'Decoration Characteristics'
+        db_table = 'characteristics'
+        verbose_name_plural = 'Characteristics'
 
     def __str__(self):
         return self.name
@@ -85,7 +85,10 @@ class Subjects(models.Model):
 
 class Colours(models.Model):
     name = models.CharField(max_length=128)
-    rgb = models.CharField(max_length=8)
+    rgb = models.CharField(max_length=8, blank=True, null=True)
+    
+    parent_colour = models.ForeignKey("self",models.CASCADE, blank=True, null=True)
+
 
     class Meta:
         #managed = False
@@ -161,9 +164,8 @@ class Calendar(models.Model):
     def __str__(self):
         return self.latin_name
 
-#[ ]TODO Decoration Subjects as inline in Decoration
 class DecorationSubjects(models.Model):
-    decoration = models.ForeignKey('Decoration', models.DO_NOTHING, related_name='decoration_subject')
+    decoration = models.ForeignKey('Decoration', models.DO_NOTHING, related_name='decoration_subjects')
     subject = models.ForeignKey('Subjects', models.DO_NOTHING, related_name='decoration_subject')
 
     class Meta:
@@ -173,6 +175,31 @@ class DecorationSubjects(models.Model):
 
     def __str__(self):
         return str(self.decoration) +" / "+ str(self.subject)
+
+
+class DecorationColours(models.Model):
+    decoration = models.ForeignKey('Decoration', models.DO_NOTHING, related_name='decoration_colours')
+    colour = models.ForeignKey('Colours', models.DO_NOTHING, related_name='decoration_colour')
+
+    class Meta:
+        #managed = False
+        db_table = 'decoration_colours'
+        verbose_name_plural = 'Decoration Colours'
+
+    def __str__(self):
+        return str(self.decoration) +" / "+ str(self.colour)
+
+class DecorationCharacteristics(models.Model):
+    decoration = models.ForeignKey('Decoration', models.DO_NOTHING, related_name='decoration_characteristics')
+    characteristics = models.ForeignKey('Characteristics', models.DO_NOTHING, related_name='decoration_characteristics')
+
+    class Meta:
+        #managed = False
+        db_table = 'decoration_characteristics'
+        verbose_name_plural = 'Decoration characteristics'
+
+    def __str__(self):
+        return str(self.decoration) +" / "+ str(self.characteristics)
 
 class Decoration(models.Model):
     manuscript = models.ForeignKey('Manuscripts', models.DO_NOTHING, related_name='ms_decorations')
@@ -184,25 +211,27 @@ class Decoration(models.Model):
 
     where_in_ms_from = models.DecimalField(max_digits=5, decimal_places=1)
     where_in_ms_to = models.DecimalField(max_digits=5, decimal_places=1)
-    location_characteristic = models.CharField(max_length=128, blank=True, null=True)
+    location_on_the_page = models.CharField(max_length=10,choices=[("WITHIN", "within the column "),("MARGIN", "on the margin"),("IN_TEXT", "in the text line")], blank=True, null=True)
 
     decoration_type = models.ForeignKey('DecorationTypes', models.DO_NOTHING, related_name='decoration_type')
-    decoration_subtype = models.ForeignKey('DecorationTypes', models.DO_NOTHING, related_name='decoration_subtype')
+    decoration_subtype = models.ForeignKey('DecorationTypes', models.DO_NOTHING, related_name='decoration_subtype',blank=True, null=True)
 
-    size_characteristic = models.CharField(max_length=10,choices=[("SMALL1", "small (1-line)"),("SMALL2", "small (2-lines)"),("SMALL3", "small (3-lines)"),("LARGE", "large"),("FULL", "full"),("PARTIAL", "partial"),("3SIDES", "three-sides"),("1COLUMN", "one column"),("2COLUMNS", "two columns")], blank=True, null=True)
+    size_characteristic = models.CharField(max_length=10,choices=[("SMALL", "small"),("1LINE", "1-line"),("2LINES", "2-lines"),("3LINES", "3-lines"),("1SYSTEM", "1-system"),("2SYSTEMS", "2-systems"),("FULL", "full page")], blank=True, null=True)
+    size_height_min = models.PositiveIntegerField(blank=True, null=True)
+    size_height_max = models.PositiveIntegerField(blank=True, null=True)
+
+    size_width_min = models.PositiveIntegerField(blank=True, null=True)
+    size_width_max = models.PositiveIntegerField(blank=True, null=True)
     
-    size_height = models.PositiveIntegerField(blank=True, null=True)
-    size_width = models.PositiveIntegerField(blank=True, null=True)
-    
-    decoration_colour = models.ForeignKey('Colours', models.DO_NOTHING, related_name='decoration_colour', blank=True, null=True)
+    #decoration_colour = models.ForeignKey('Colours', models.DO_NOTHING, related_name='decoration_colour', blank=True, null=True)
 
-    monochrome_or_colour = models.CharField(max_length=2,choices=[("M", "monochromatic"),("C", "in colour")], blank=True, null=True)
+    monochrome_or_colour = models.CharField(max_length=2,choices=[("M", "monochromatic"),("B", "bicolor"),("C", "in colour")], blank=True, null=True)
 
-    characteristic = models.ForeignKey('DecorationCharacteristics', models.DO_NOTHING, related_name='decoration_characteristic', blank=True, null=True)
-    technique = models.ForeignKey('DecorationTechniques', models.DO_NOTHING, related_name='decoration_technique')
+    #characteristic = models.ForeignKey('Characteristics', models.DO_NOTHING, related_name='decoration_characteristic', blank=True, null=True)
+    technique = models.ForeignKey('DecorationTechniques', models.DO_NOTHING, related_name='decoration_technique', blank=True, null=True)
 
     #subject = models.ForeignKey('Subjects', models.DO_NOTHING, related_name='decoration_subject')
-    initials = models.CharField(max_length=128, blank=True, null=True)
+    ornamented_text = models.CharField(max_length=128, blank=True, null=True)
 
     rite_name_standarized = models.ForeignKey('RiteNames', models.DO_NOTHING, null=True, blank=True)
 
@@ -288,12 +317,15 @@ class Condition(models.Model):
     damage = models.CharField(max_length=10,choices=[("very", "very damaged"),("average", "average damaged"),("slightly","slightly damaged")], blank=True, null=True)
 
     parchment_shrinkage = models.BooleanField(null=True)
-    illegible_text_fragments = models.BooleanField(null=True)
+    illegible_text = models.BooleanField(null=True)
     ink_corrosion = models.BooleanField(null=True)
     copper_corrosion = models.BooleanField(null=True)
     powdering_or_cracking_paint_layer = models.BooleanField(null=True)
     conservation = models.BooleanField(null=True)
-    conservation_date = models.ForeignKey('TimeReference', models.DO_NOTHING, related_name='%(class)s_conservation_dating', null=True)
+    conservation_date = models.ForeignKey('TimeReference', models.DO_NOTHING, related_name='%(class)s_conservation_dating', null=True, blank=True)
+    darkening = models.BooleanField(null=True)
+    water_staining = models.BooleanField(null=True)
+    historic_repairs = models.BooleanField(null=True)
 
     comments = models.TextField(blank=True, null=True)
 
@@ -520,10 +552,10 @@ class Content(models.Model):
 
 class TimeReference(models.Model):
     time_description = models.CharField(max_length=64)
-    century_from = models.IntegerField(blank=True, null=True)
-    century_to = models.IntegerField(blank=True, null=True)
-    year_from = models.IntegerField(blank=True, null=True)
-    year_to = models.IntegerField(blank=True, null=True)
+    century_from = models.IntegerField()
+    century_to = models.IntegerField()
+    year_from = models.IntegerField()
+    year_to = models.IntegerField()
 
     class Meta:
         #managed = False
@@ -687,8 +719,8 @@ class Manuscripts(models.Model):
     common_name = models.CharField(max_length=255, blank=True, null=True)
     dating = models.ForeignKey(TimeReference, models.DO_NOTHING, related_name='%(class)s_dating', blank=True, null=True)
     dating_comment = models.TextField(blank=True, null=True)
-    place_of_origins = models.ForeignKey(Places, models.DO_NOTHING, related_name='%(class)s_origin', blank=True, null=True)
-    place_of_origins_comment = models.TextField(blank=True, null=True)
+    place_of_origin = models.ForeignKey(Places, models.DO_NOTHING, related_name='%(class)s_origin', blank=True, null=True)
+    place_of_origin_comment = models.TextField(blank=True, null=True)
     #number_of_parchment_folios = models.IntegerField(blank=True, null=True)
     #number_of_paper_leaves = models.IntegerField(blank=True, null=True)
     #page_size_max_height = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
@@ -741,6 +773,21 @@ class Manuscripts(models.Model):
             txt = txt[0:30]
             txt += '(...)'
         return txt
+
+    def get_material(self):
+        """
+        FOR TEI 
+        Determines the material type for the manuscript based on all Quires.
+        Returns 'chart' if all are paper, 'perg' if all are parchment, and 'mixed' otherwise.
+        """
+        quire_materials = self.ms_quires.values_list('material', flat=True)
+
+        if all(material == 'paper' for material in quire_materials):
+            return 'chart'  # All paper
+        elif all(material == 'parchment' for material in quire_materials):
+            return 'perg'  # All parchment
+        else:
+            return 'mixed'  # Mixed materials
 
 class Projects(models.Model):
     name = models.CharField(max_length=64, default="Project Name")
@@ -1090,7 +1137,26 @@ class ManuscriptBindingDecorations(models.Model):
     def __str__(self): 
         return str(self.manuscript)  + '/' + str(self.decoration)
 
+class BindingComponents(models.Model):
+    name = models.CharField(max_length=64) 
 
+    class Meta:
+        db_table = 'binding_components'
+        verbose_name_plural = 'Binding Components'
+
+    def __str__(self): 
+        return self.name
+
+class ManuscriptBindingComponents(models.Model):
+    manuscript = models.ForeignKey(Manuscripts, models.DO_NOTHING, related_name='ms_binding_components')
+    component = models.ForeignKey(BindingComponents, models.CASCADE)
+
+    class Meta:
+        db_table = 'manuscript_binding_components'
+        verbose_name_plural = 'Manuscript Binding Components'
+
+    def __str__(self): 
+        return str(self.manuscript)  + '/' + str(self.component)
 
 class Binding(models.Model):
     manuscript = models.ForeignKey(Manuscripts, models.DO_NOTHING, related_name='ms_binding')
@@ -1099,13 +1165,16 @@ class Binding(models.Model):
     max_width = models.PositiveIntegerField(blank=True, null=True)
     block_max = models.PositiveIntegerField(blank=True, null=True)
     date = models.ForeignKey(TimeReference, models.DO_NOTHING, blank=True, null=True)
-    place_of_origins = models.ForeignKey(Places, models.DO_NOTHING, blank=True, null=True)
+    place_of_origin = models.ForeignKey(Places, models.DO_NOTHING, blank=True, null=True)
     type_of_binding = models.ForeignKey(BindingTypes, models.DO_NOTHING, null=True)
     style_of_binding = models.ForeignKey(BindingStyles, models.DO_NOTHING, null=True)
+    category = models.CharField(max_length=12,choices=[("original", "original"),("early", "early modern"),("historical", "Historical rebinding"),("conservation", "Conservation binding"),("restored", "Restored binding")], blank=True, null=True)
+
     #materials #many-to-one
     #type of decoration #many-to-one
     decoration_comment = models.TextField(blank=True, null=True)
     general_comments = models.TextField(blank=True, null=True)
+    characteristic_of_components = models.TextField(blank=True, null=True)
 
     #MANUSCRIPT ID		TYPE OF BINDING	STYLE OF BINDING
     #DECORATION COMMENT	GENERAL COMMENTS
@@ -1128,6 +1197,7 @@ class Hands(models.Model):
     rism = models.CharField(max_length=50,blank=True, null=True)
     dating = models.ForeignKey(TimeReference, models.DO_NOTHING, blank=True, null=True)
     name = models.CharField(max_length=64,blank=True, null=True)
+    is_identified = models.BooleanField(null=True)
 
     class Meta:
         db_table = 'hands'
