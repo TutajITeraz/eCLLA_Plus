@@ -3080,7 +3080,7 @@ class BibliographyImportView(View):
         return obj.id if obj else None
 
 
-class Index(LoginRequiredMixin, View):
+class Index(View):
     template = 'index.html'
     login_url = '/login/'
 
@@ -3101,7 +3101,7 @@ class Index(LoginRequiredMixin, View):
         #    }
         #)
 
-class ManuscriptsView(LoginRequiredMixin, View):
+class ManuscriptsView(View):
     template = 'manuscripts.html'
     login_url = '/login/'
 
@@ -3245,7 +3245,7 @@ class MSMusicNotationView(View):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class ManuscriptDetail(LoginRequiredMixin, View):
+class ManuscriptDetail(View):
     template = 'manuscript_detail.html'
     login_url = '/login/'
 
