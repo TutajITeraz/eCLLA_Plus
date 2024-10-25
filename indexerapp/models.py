@@ -211,12 +211,12 @@ class Decoration(models.Model):
 
     where_in_ms_from = models.DecimalField(max_digits=5, decimal_places=1)
     where_in_ms_to = models.DecimalField(max_digits=5, decimal_places=1)
-    location_on_the_page = models.CharField(max_length=10,choices=[("WITHIN", "within the column "),("MARGIN", "on the margin"),("IN_TEXT", "in the text line")], blank=True, null=True)
+    location_on_the_page = models.CharField(max_length=10,choices=[("WITHIN", "within the column"),("MARGIN", "on the margin"),("IN_TEXT", "in the text line")], blank=True, null=True)
 
     decoration_type = models.ForeignKey('DecorationTypes', models.DO_NOTHING, related_name='decoration_type')
     decoration_subtype = models.ForeignKey('DecorationTypes', models.DO_NOTHING, related_name='decoration_subtype',blank=True, null=True)
 
-    size_characteristic = models.CharField(max_length=10,choices=[("SMALL", "small"),("1LINE", "1-line"),("2LINES", "2-lines"),("3LINES", "3-lines"),("1SYSTEM", "1-system"),("2SYSTEMS", "2-systems"),("FULL", "full page")], blank=True, null=True)
+    size_characteristic = models.CharField(max_length=10,choices=[("SMALL", "small"),("1LINE", "1-line"),("2LINES", "2-lines"),("3LINES", "3-lines"),("1SYSTEM", "1-system"),("2SYSTEMS", "2-systems"),("LARGE", "large"),("FULL", "full page")], blank=True, null=True)
     size_height_min = models.PositiveIntegerField(blank=True, null=True)
     size_height_max = models.PositiveIntegerField(blank=True, null=True)
 
@@ -744,6 +744,7 @@ class Manuscripts(models.Model):
     iiif_manifest_url = models.CharField(max_length=1024, blank=True, null=True)
     #zoteroCollection = models.CharField(max_length=64, blank=True, null=True)
     image = models.ImageField(upload_to='images/', blank=True, null=True)
+    pdf_url = models.CharField(max_length=1024, blank=True, null=True)
 
     general_comment = models.TextField(blank=True, null=True)
     form_of_an_item = models.CharField(max_length=2,choices=[("C", "CODEX"),("F", "FRAGMENT"),("P", "PALIMPSEST"),("L", "LOST")], blank=True, null=True)
